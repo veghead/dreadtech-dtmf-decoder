@@ -12,8 +12,9 @@
 
 #define SAMPLING_RATE       8000
 #define MAX_BINS            8
-#define GOERTZEL_N          100
+#define GOERTZEL_N          205
 #define DETECTBUFFERLEN		8192
+#define DEBOUNCELEN			2
 
 /*
  * coef = 2.0 * cos( (2.0 * PI * k) / (float)GOERTZEL_N)) ;
@@ -30,11 +31,13 @@
 	double      r[ MAX_BINS ];
 	double      coefs[ MAX_BINS ] ;
 	double		*currentFreqs;
+	int			lastcount;
 	char		last;
 	char		*detectBuffer;
 	bool		running;
 }
 
+@property (assign) int lastcount;
 @property (assign) double *currentFreqs;
 @property (assign) char *detectBuffer;
 @property (readwrite) bool running;

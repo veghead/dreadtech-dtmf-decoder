@@ -38,7 +38,7 @@ static void recCallback (void *aqData,
 
 @implementation DTMFDecoder
 
-@synthesize currentFreqs, detectBuffer, running;
+@synthesize currentFreqs, detectBuffer, running, lastcount;
 
 -(id) init
 {
@@ -91,6 +91,7 @@ static void recCallback (void *aqData,
 	}
 
 	last = ' ';
+	lastcount = 0;
 	[self resetBuffer];
 	
 	AudioQueueStart(queueObject,NULL);
@@ -241,7 +242,11 @@ static void recCallback (void *aqData,
 
 		if ( see_digit ) {
 			if (last != *row_col_ascii_codes[row][col-4]) {
-				if ((DETECTBUFFERLEN - strlen(detectBuffer) > 5) && (' ' != *row_col_ascii_codes[row][col-4])) { 
+				last = *row_col_ascii_codes[row][col-4];
+				lastcount = 0;
+			} else {
+				lastcount++;
+				if ((DETECTBUFFERLEN - strlen(detectBuffer) > 5) && (lastcount == DEBOUNCELEN)) { 
 					strncat(detectBuffer,row_col_ascii_codes[row][col-4],DETECTBUFFERLEN);
 				}
 				last = *row_col_ascii_codes[row][col-4];
@@ -249,7 +254,12 @@ static void recCallback (void *aqData,
 			//NSLog([[NSString alloc] initWithCString: row_col_ascii_codes[row][col-4]]);
 			return true;
 		} else {
-			last = ' ';
+			if (last == ' ') {
+				lastcount++;
+			} else {
+				last = ' ';
+				lastcount = 0;
+			}
 			//NSLog(@"Nothing");
 		}
 	}

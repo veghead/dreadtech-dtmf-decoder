@@ -58,7 +58,7 @@
 
 - (UIImage *)charToImage:(char) chr
 {
-	if (isdigit(chr)) {
+	if (isdigit(chr) or (chr == 'A') or (chr == 'B') or (chr == 'C') or (chr == 'D')) {
 		char name[10];
 		snprintf(name,10,"%c.png",chr);
 		return [UIImage imageNamed:[[NSString alloc] initWithCString:name]];	

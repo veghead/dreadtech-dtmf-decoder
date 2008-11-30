@@ -33,15 +33,9 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 	[self.view setNeedsLayout];
-	char *bufferstring = calloc(1,20);
-	strcpy(bufferstring,"12345678901234567");
-	[self setLcdBuffer:bufferstring];
-	NSLog(@"ok");
 	DTMFDecoder *dec = [[DTMFDecoder alloc] init];
 	[dec setDTMF:1];
 	[self setDecoder:dec];
-
-	NSLog(@"OK");
 	//NSData *d = [NSData dataWithContentsOfURL:[NSURL URLWithString:@"http://fatsquirrel.org/dtmf.raw"]];
 	//UInt16 *dod = (UInt16 *)[d bytes];
 	//for (int i = 0; i < [d length]/2; i++) {
