@@ -36,14 +36,14 @@
 	DTMFDecoder *dec = [[DTMFDecoder alloc] init];
 	[dec setDTMF:1];
 	[self setDecoder:dec];
-	//NSData *d = [NSData dataWithContentsOfURL:[NSURL URLWithString:@"http://fatsquirrel.org/dtmf.raw"]];
+	//NSData *d = [NSData dataWithContentsOfRL:[NSURL URLWithString:@"http://fatsquirrel.org/dtmf.raw"]];
 	//UInt16 *dod = (UInt16 *)[d bytes];
 	//for (int i = 0; i < [d length]/2; i++) {
 	//	[self.decoder goertzel:dod[i]];
 	//}
 	//[self setData:d];
 	[(LCDView *)self.view setLCDString:[self.decoder detectBuffer]];
-	[NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(tick:) userInfo:self repeats:YES];	
+	[NSTimer scheduledTimerWithTimeInterval:0.25 target:self selector:@selector(tick:) userInfo:self repeats:YES];	
 }
 
 

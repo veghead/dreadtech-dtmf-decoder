@@ -12,9 +12,9 @@
 
 #define SAMPLING_RATE       8000
 #define MAX_BINS            8
-#define GOERTZEL_N          205
+#define GOERTZEL_N          93
 #define DETECTBUFFERLEN		8192
-#define DEBOUNCELEN			2
+#define DEBOUNCELEN			3
 
 /*
  * coef = 2.0 * cos( (2.0 * PI * k) / (float)GOERTZEL_N)) ;
@@ -28,7 +28,7 @@
 	int         sample_count;
 	double      q1[ MAX_BINS ];
 	double      q2[ MAX_BINS ];
-	double      r[ MAX_BINS ];
+	double      freqpower[ MAX_BINS ];
 	double      coefs[ MAX_BINS ] ;
 	double		*currentFreqs;
 	int			lastcount;

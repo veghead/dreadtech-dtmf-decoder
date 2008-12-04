@@ -8,6 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">352.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="6"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -38,9 +39,8 @@
 					<object class="IBUIImageView" id="522545354">
 						<reference key="NSNextResponder" ref="774585933"/>
 						<int key="NSvFlags">274</int>
-						<string key="NSFrame">{{0, 54}, {320, 463}}</string>
+						<string key="NSFrame">{{1, 48}, {320, 463}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
-						<reference key="NSWindow"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClearsContextBeforeDrawing">NO</bool>
 						<int key="IBUIContentMode">4</int>
@@ -55,7 +55,6 @@
 						<int key="NSvFlags">290</int>
 						<string key="NSFrameSize">{320, 44}</string>
 						<reference key="NSSuperview" ref="774585933"/>
-						<reference key="NSWindow"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClearsContextBeforeDrawing">NO</bool>
 						<int key="IBUIBarStyle">2</int>
@@ -72,7 +71,6 @@
 						<int key="NSvFlags">266</int>
 						<string key="NSFrame">{{0, 416}, {320, 44}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
-						<reference key="NSWindow"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClearsContextBeforeDrawing">NO</bool>
 						<int key="IBUIBarStyle">2</int>
@@ -108,7 +106,6 @@
 						<int key="NSvFlags">256</int>
 						<string key="NSFrame">{{79, 285}, {10, 14}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
-						<reference key="NSWindow"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClearsContextBeforeDrawing">NO</bool>
 						<float key="IBUIAlpha">7.816901e-01</float>
@@ -120,7 +117,6 @@
 						<int key="NSvFlags">256</int>
 						<string key="NSFrame">{{92, 285}, {10, 14}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
-						<reference key="NSWindow"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClearsContextBeforeDrawing">NO</bool>
 						<float key="IBUIAlpha">7.816901e-01</float>
@@ -132,7 +128,6 @@
 						<int key="NSvFlags">256</int>
 						<string key="NSFrame">{{105, 285}, {10, 14}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
-						<reference key="NSWindow"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClearsContextBeforeDrawing">NO</bool>
 						<float key="IBUIAlpha">7.816901e-01</float>
@@ -144,7 +139,6 @@
 						<int key="NSvFlags">256</int>
 						<string key="NSFrame">{{118, 285}, {10, 14}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
-						<reference key="NSWindow"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClearsContextBeforeDrawing">NO</bool>
 						<float key="IBUIAlpha">7.816901e-01</float>
@@ -156,7 +150,6 @@
 						<int key="NSvFlags">256</int>
 						<string key="NSFrame">{{131, 285}, {10, 14}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
-						<reference key="NSWindow"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClearsContextBeforeDrawing">NO</bool>
 						<float key="IBUIAlpha">7.816901e-01</float>
@@ -168,7 +161,6 @@
 						<int key="NSvFlags">256</int>
 						<string key="NSFrame">{{144, 285}, {10, 14}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
-						<reference key="NSWindow"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClearsContextBeforeDrawing">NO</bool>
 						<float key="IBUIAlpha">7.816901e-01</float>
@@ -180,7 +172,6 @@
 						<int key="NSvFlags">256</int>
 						<string key="NSFrame">{{157, 285}, {10, 14}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
-						<reference key="NSWindow"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClearsContextBeforeDrawing">NO</bool>
 						<float key="IBUIAlpha">7.816901e-01</float>
@@ -192,7 +183,6 @@
 						<int key="NSvFlags">256</int>
 						<string key="NSFrame">{{170, 285}, {10, 14}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
-						<reference key="NSWindow"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClearsContextBeforeDrawing">NO</bool>
 						<float key="IBUIAlpha">7.816901e-01</float>
@@ -204,7 +194,6 @@
 						<int key="NSvFlags">256</int>
 						<string key="NSFrame">{{183, 285}, {10, 14}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
-						<reference key="NSWindow"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClearsContextBeforeDrawing">NO</bool>
 						<float key="IBUIAlpha">7.816901e-01</float>
@@ -216,7 +205,6 @@
 						<int key="NSvFlags">256</int>
 						<string key="NSFrame">{{196, 285}, {10, 14}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
-						<reference key="NSWindow"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClearsContextBeforeDrawing">NO</bool>
 						<float key="IBUIAlpha">7.816901e-01</float>
@@ -228,7 +216,6 @@
 						<int key="NSvFlags">256</int>
 						<string key="NSFrame">{{209, 285}, {10, 14}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
-						<reference key="NSWindow"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClearsContextBeforeDrawing">NO</bool>
 						<float key="IBUIAlpha">7.816901e-01</float>
@@ -240,7 +227,6 @@
 						<int key="NSvFlags">256</int>
 						<string key="NSFrame">{{222, 285}, {10, 14}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
-						<reference key="NSWindow"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClearsContextBeforeDrawing">NO</bool>
 						<float key="IBUIAlpha">7.816901e-01</float>
@@ -252,7 +238,6 @@
 						<int key="NSvFlags">256</int>
 						<string key="NSFrame">{{236, 285}, {10, 14}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
-						<reference key="NSWindow"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClearsContextBeforeDrawing">NO</bool>
 						<float key="IBUIAlpha">7.816901e-01</float>
@@ -264,7 +249,6 @@
 						<int key="NSvFlags">256</int>
 						<string key="NSFrame">{{249, 285}, {10, 14}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
-						<reference key="NSWindow"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClearsContextBeforeDrawing">NO</bool>
 						<float key="IBUIAlpha">7.816901e-01</float>
@@ -276,7 +260,6 @@
 						<int key="NSvFlags">256</int>
 						<string key="NSFrame">{{262, 285}, {10, 14}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
-						<reference key="NSWindow"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClearsContextBeforeDrawing">NO</bool>
 						<float key="IBUIAlpha">7.816901e-01</float>
@@ -288,7 +271,6 @@
 						<int key="NSvFlags">292</int>
 						<string key="NSFrame">{{79, 263}, {52, 14}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
-						<reference key="NSWindow"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<bool key="IBUIClearsContextBeforeDrawing">NO</bool>
 						<float key="IBUIAlpha">7.800000e-01</float>
@@ -302,7 +284,6 @@
 				</object>
 				<string key="NSFrameSize">{320, 460}</string>
 				<reference key="NSSuperview"/>
-				<reference key="NSWindow"/>
 				<object class="NSColor" key="IBUIBackgroundColor">
 					<int key="NSColorSpace">1</int>
 					<bytes key="NSRGB">MC44MDAwMDAwMSAwLjgwMDAwMDAxIDAuODAwMDAwMDEAA</bytes>
@@ -496,7 +477,6 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="523297011"/>
 							<reference ref="1031732378"/>
-							<reference ref="522545354"/>
 							<reference ref="598605243"/>
 							<reference ref="235300934"/>
 							<reference ref="746649304"/>
@@ -513,6 +493,7 @@
 							<reference ref="432491252"/>
 							<reference ref="705014770"/>
 							<reference ref="404478120"/>
+							<reference ref="522545354"/>
 						</object>
 						<reference key="parent" ref="360949347"/>
 					</object>

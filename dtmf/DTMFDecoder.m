@@ -166,8 +166,8 @@ static void recCallback (void *aqData,
 	row = 0;
 	maxval = 0.0;
 	for ( i=0; i<4; i++ ) {
-		if ( r[i] > maxval ) {
-			maxval = r[i];
+		if ( freqpower[i] > maxval ) {
+			maxval = freqpower[i];
 			row = i;
 		}
 	}
@@ -177,8 +177,8 @@ static void recCallback (void *aqData,
 	col = 4;
 	maxval = 0.0;
 	for ( i=4; i<8; i++ ) {
-		if ( r[i] > maxval ) {
-			maxval = r[i];
+		if ( freqpower[i] > maxval ) {
+			maxval = freqpower[i];
 			col = i;
 		}
 	}
@@ -186,11 +186,11 @@ static void recCallback (void *aqData,
 	
 	/* Check for minimum energy */
 	
-	if ( r[row] < 4.0e5 )  {
-		//NSLog(@"row Low");
+	if ( freqpower[row] < 4.0e5 )  {
+		NSLog(@"row Low");
 		/* energy not high enough */
-	} else if ( r[col] < 4.0e5 ) {
-		//NSLog(@"Col low");
+	} else if ( freqpower[col] < 4.0e5 ) {
+		NSLog(@"Col low");
 		/* energy not high enough */
 	} else {
 		see_digit = TRUE;
@@ -204,20 +204,21 @@ static void recCallback (void *aqData,
 		 *  0.398 < v1 / v2
 		 *  0.398 * v2 < v1
 		 */
-		if ( r[col] > r[row] ) {
+		
+		if ( freqpower[col] > freqpower[row] ) {
 			// Normal twist
 			max_index = col;
-			if ( r[row] < (r[col] * 0.398) )  {  /* twist > 4dB, error */
+			if ( freqpower[row] < (freqpower[col] * 0.398) )  {  // twist > 4dB, error 0.398
 				see_digit = FALSE;
-				//NSLog(@"col twist");
+				NSLog(@"col twist");
 			}
 		} else { 
 		    // if ( r[row] > r[col] ) 
 			// Reverse twist 
 			max_index = row;
-			if ( r[col] < (r[row] * 0.158) ) {   /* twist > 8db, error */
-				see_digit = FALSE;
-				//NSLog(@"row twist");
+			if ( freqpower[col] < (freqpower[row] * 0.158) ) {   // twist > 8db, error 0.158
+				//see_digit = FALSE;
+				NSLog(@"row twist");
 			}
 		}
 		
@@ -226,14 +227,14 @@ static void recCallback (void *aqData,
 		// Here we count the number of signals above the threshold and
 		// there ought to be only two.
 		//
-		if ( r[max_index] > 1.0e9 ) {
-			t = r[max_index] * 0.158;
+		if ( freqpower[max_index] > 1.0e9 ) {
+			t = freqpower[max_index] * 0.158; // 0.158
 		} else {
-			t = r[max_index] * 0.010;
+			t = freqpower[max_index] * 0.010; //0.010
 		}
 		peak_count = 0;
 		for ( i=0; i<8; i++ ) {
-			if ( r[i] > t )
+			if ( freqpower[i] > t )
 				peak_count++;
 		}
 		if ( peak_count > 2 ) {
@@ -251,7 +252,7 @@ static void recCallback (void *aqData,
 				}
 				last = *row_col_ascii_codes[row][col-4];
 			}
-			//NSLog([[NSString alloc] initWithCString: row_col_ascii_codes[row][col-4]]);
+			NSLog([[NSString alloc] initWithCString: row_col_ascii_codes[row][col-4]]);
 			return true;
 		} else {
 			if (last == ' ') {
@@ -287,7 +288,7 @@ static void recCallback (void *aqData,
 	
 	if (sample_count == GOERTZEL_N) {
 		for ( i=0; i<MAX_BINS; i++ ) {
-			r[i] = (q1[i] * q1[i]) + (q2[i] * q2[i]) - (coefs[i] * q1[i] * q2[i]);
+			freqpower[i] = (q1[i] * q1[i]) + (q2[i] * q2[i]) - (coefs[i] * q1[i] * q2[i]);
 			q1[i] = 0.0;
 			q2[i] = 0.0;
 		}
