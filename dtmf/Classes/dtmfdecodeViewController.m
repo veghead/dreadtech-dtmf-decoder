@@ -7,8 +7,7 @@
 //
 
 #import "dtmfdecodeViewController.h"
-
-@implementation dtmfdecodeViewController
+g@implementation dtmfdecodeViewController
 
 @synthesize lcdBuffer, data, decoder;
 /*
