@@ -216,7 +216,7 @@
 						<key>_historyCapacity</key>
 						<integer>0</integer>
 						<key>bookmark</key>
-						<string>8DF71E3A0EE77DB800075114</string>
+						<string>8DF71E660EE780DA00075114</string>
 						<key>history</key>
 						<array>
 							<string>8DF71E2D0EE77D6D00075114</string>
@@ -256,7 +256,7 @@
 						<key>_historyCapacity</key>
 						<integer>0</integer>
 						<key>bookmark</key>
-						<string>8DF71E3B0EE77DB800075114</string>
+						<string>8DF71E670EE780DA00075114</string>
 						<key>history</key>
 						<array>
 							<string>8DF71E2C0EE77D6400075114</string>
@@ -414,7 +414,7 @@
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>8DF71E390EE77DB800075114</string>
+										<string>8DF71E650EE780DA00075114</string>
 										<key>history</key>
 										<array>
 											<string>8DC642850ED9D44E002D18A1</string>
@@ -662,9 +662,8 @@
 		<string>1CD10A99069EF8BA00B06720</string>
 		<string>1C78EAAD065D492600B07095</string>
 		<string>8DF71D7F0EE7595000075114</string>
-		<string>8DE35A9B0ECE46BB00731786</string>
 		<string>8DF71E310EE77D8800075114</string>
-		<string>/Users/veg/devel/dtmf-checkout/dtmfdecode.xcodeproj</string>
+		<string>8DE35A9B0ECE46BB00731786</string>
 	</array>
 	<key>WindowString</key>
 	<string>118 84 1031 592 0 0 1280 778 </string>
