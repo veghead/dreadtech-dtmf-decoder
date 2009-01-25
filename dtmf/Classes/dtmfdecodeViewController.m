@@ -7,7 +7,7 @@
 //
 
 #import "dtmfdecodeViewController.h"
-g@implementation dtmfdecodeViewController
+@implementation dtmfdecodeViewController
 
 @synthesize lcdBuffer, data, decoder;
 /*
@@ -50,6 +50,7 @@ g@implementation dtmfdecodeViewController
 - (void) tick: (NSTimer *)timer
 {
 	[(LCDView *)self.view setLCDString:[self.decoder detectBuffer]];
+	[(LCDView *)self.view setLEDs:[self.decoder ledbin]];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {

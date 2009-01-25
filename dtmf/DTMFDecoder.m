@@ -38,7 +38,7 @@ static void recCallback (void *aqData,
 
 @implementation DTMFDecoder
 
-@synthesize currentFreqs, detectBuffer, running, lastcount;
+@synthesize currentFreqs, detectBuffer, running, lastcount, ledbin;
 
 -(id) init
 {
@@ -92,6 +92,7 @@ static void recCallback (void *aqData,
 
 	last = ' ';
 	lastcount = 0;
+	gaplen = 0;
 	[self resetBuffer];
 	
 	AudioQueueStart(queueObject,NULL);
@@ -233,34 +234,42 @@ static void recCallback (void *aqData,
 			t = freqpower[max_index] * 0.010; //0.010
 		}
 		peak_count = 0;
+		int tmpledbin = 0;
 		for ( i=0; i<8; i++ ) {
-			if ( freqpower[i] > t )
+			if ( freqpower[i] > t ) {
 				peak_count++;
+				tmpledbin |= 1;
+			}
+			tmpledbin <<=1;
 		}
+		[self setLedbin:tmpledbin];
 		if ( peak_count > 2 ) {
 			see_digit = FALSE;
 		}
-
-		if ( see_digit ) {
+		if ( ! see_digit) {
+			if (last == ' ') {
+				gaplen++;
+			} else {
+				last = ' ';
+				lastcount = 0;
+				gaplen = 0;
+			}
+		} else {
+			
 			if (last != *row_col_ascii_codes[row][col-4]) {
 				last = *row_col_ascii_codes[row][col-4];
 				lastcount = 0;
 			} else {
 				lastcount++;
-				if ((DETECTBUFFERLEN - strlen(detectBuffer) > 5) && (lastcount == DEBOUNCELEN)) { 
+				if ((DETECTBUFFERLEN - strlen(detectBuffer) > 5) && (lastcount == DEBOUNCELEN)
+							&& (gaplen >= GAPLEN)) { 
 					strncat(detectBuffer,row_col_ascii_codes[row][col-4],DETECTBUFFERLEN);
+					
 				}
 				last = *row_col_ascii_codes[row][col-4];
 			}
 			NSLog([[NSString alloc] initWithCString: row_col_ascii_codes[row][col-4]]);
 			return true;
-		} else {
-			if (last == ' ') {
-				lastcount++;
-			} else {
-				last = ' ';
-				lastcount = 0;
-			}
 			//NSLog(@"Nothing");
 		}
 	}

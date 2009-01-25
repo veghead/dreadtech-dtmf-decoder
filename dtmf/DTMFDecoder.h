@@ -14,7 +14,8 @@
 #define MAX_BINS            8
 #define GOERTZEL_N          93
 #define DETECTBUFFERLEN		8192
-#define DEBOUNCELEN			3
+#define DEBOUNCELEN			2
+#define GAPLEN				2
 
 /*
  * coef = 2.0 * cos( (2.0 * PI * k) / (float)GOERTZEL_N)) ;
@@ -32,7 +33,9 @@
 	double      coefs[ MAX_BINS ] ;
 	double		*currentFreqs;
 	int			lastcount;
+	int			gaplen;
 	char		last;
+	int			ledbin;
 	char		*detectBuffer;
 	bool		running;
 }
@@ -40,6 +43,7 @@
 @property (assign) int lastcount;
 @property (assign) double *currentFreqs;
 @property (assign) char *detectBuffer;
+@property (assign) int ledbin;
 @property (readwrite) bool running;
 
 - (id) init;

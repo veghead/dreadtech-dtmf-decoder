@@ -11,7 +11,7 @@
 
 @implementation LCDView
 
-@synthesize a,b,c,d,e,f,g,h,i,j,k,l,m,n,o;
+//@synthesize a,b,c,d,e,f,g,h,i,j,k,l,m,n,o;
 
 - (id)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
@@ -20,39 +20,26 @@
     return self;
 }
 
+
 - (void)setLCDString:(char*)content {
-	if (strlen(content) > 15) {
-		content = content + (strlen(content)-15);
+	if (strlen(content) > LCD_COLS) {
+		content = content + (strlen(content)-LCD_COLS);
 	}
-	[a setImage:[self charToImage:*content]];
-	if (*content) content++;
-	[b setImage:[self charToImage:*content]];
-	if (*content) content++;
-	[c setImage:[self charToImage:*content]];
-	if (*content) content++;
-	[d setImage:[self charToImage:*content]];
-	if (*content) content++;
-	[e setImage:[self charToImage:*content]];
-	if (*content) content++;
-	[f setImage:[self charToImage:*content]];
-	if (*content) content++;
-	[g setImage:[self charToImage:*content]];
-	if (*content) content++;
-	[h setImage:[self charToImage:*content]];
-	if (*content) content++;
-	[i setImage:[self charToImage:*content]];
-	if (*content) content++;
-	[j setImage:[self charToImage:*content]];
-	if (*content) content++;
-	[k setImage:[self charToImage:*content]];
-	if (*content) content++;
-	[l setImage:[self charToImage:*content]];
-	if (*content) content++;
-	[m setImage:[self charToImage:*content]];
-	if (*content) content++;
-	[n setImage:[self charToImage:*content]];
-	if (*content) content++;
-	[o setImage:[self charToImage:*content]];
+	UIImageView *disp[LCD_COLS] = {a,b,c,d,e,f,g,h,i,j,k,l,m,n,o};
+	for (int in = 0; in < LCD_COLS; in++) {
+		[disp[in] setImage:[self charToImage:*content]];
+		if (*content) content++;
+	}
+}
+
+
+- (void)setLEDs:(int)bin {
+	UIImageView *disp[8] = {la,lb,lc,ld,le,lf,lg,lh};
+	for (int in = 0; in < 8; in++) {
+		bool onoff = (0 == (bin & 1));
+		[disp[in] setHidden:onoff];
+		bin >>= 1;	
+	}	
 }
 
 

@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-
+#define LCD_COLS 15
 
 @interface LCDView : UIView {
 	IBOutlet UIImageView *modeDisplay;
@@ -26,25 +26,18 @@
 	IBOutlet UIImageView *m;
 	IBOutlet UIImageView *n;
 	IBOutlet UIImageView *o;
+
+	IBOutlet UIImageView *la;
+	IBOutlet UIImageView *lb;
+	IBOutlet UIImageView *lc;
+	IBOutlet UIImageView *ld;
+	IBOutlet UIImageView *le;
+	IBOutlet UIImageView *lf;
+	IBOutlet UIImageView *lg;
+	IBOutlet UIImageView *lh;
 }
 
-@property (readwrite, retain) UIImageView *modeDisplay;
-@property (readwrite, retain) UIImageView *a;
-@property (readwrite, retain) UIImageView *b;
-@property (readwrite, retain) UIImageView *c;
-@property (readwrite, retain) UIImageView *d;
-@property (readwrite, retain) UIImageView *e;
-@property (readwrite, retain) UIImageView *f;
-@property (readwrite, retain) UIImageView *g;
-@property (readwrite, retain) UIImageView *h;
-@property (readwrite, retain) UIImageView *i;
-@property (readwrite, retain) UIImageView *j;
-@property (readwrite, retain) UIImageView *k;
-@property (readwrite, retain) UIImageView *l;
-@property (readwrite, retain) UIImageView *m;
-@property (readwrite, retain) UIImageView *n;
-@property (readwrite, retain) UIImageView *o;
-
 - (void)setLCDString:(char*)content;
+- (void)setLEDs:(int)bin;
 - (UIImage *)charToImage:(char) c;
 @end
