@@ -18,6 +18,7 @@
 		8D0C243C0F2D100D003DA3F2 /* on.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D0C243B0F2D100D003DA3F2 /* on.png */; };
 		8D3F0D570EE3557500684B0B /* #.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D3F0D550EE3557500684B0B /* #.png */; };
 		8D3F0D580EE3557500684B0B /* *.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D3F0D560EE3557500684B0B /* *.png */; };
+		8D5A1E100F48C90E0032949B /* Entitlements.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8D5A1E0F0F48C90E0032949B /* Entitlements.plist */; };
 		8D7D88560ED8ABE0002199B4 /* 0.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D7D884B0ED8ABE0002199B4 /* 0.png */; };
 		8D7D88570ED8ABE1002199B4 /* 1.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D7D884C0ED8ABE0002199B4 /* 1.png */; };
 		8D7D88580ED8ABE1002199B4 /* 2.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D7D884D0ED8ABE0002199B4 /* 2.png */; };
@@ -56,6 +57,7 @@
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D3F0D550EE3557500684B0B /* #.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "#.png"; sourceTree = "<group>"; };
 		8D3F0D560EE3557500684B0B /* *.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "*.png"; sourceTree = "<group>"; };
+		8D5A1E0F0F48C90E0032949B /* Entitlements.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Entitlements.plist; sourceTree = "<group>"; };
 		8D7D884B0ED8ABE0002199B4 /* 0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 0.png; sourceTree = "<group>"; };
 		8D7D884C0ED8ABE0002199B4 /* 1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 1.png; sourceTree = "<group>"; };
 		8D7D884D0ED8ABE0002199B4 /* 2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 2.png; sourceTree = "<group>"; };
@@ -142,6 +144,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				8D5A1E0F0F48C90E0032949B /* Entitlements.plist */,
 				8D0C243B0F2D100D003DA3F2 /* on.png */,
 				8D3F0D550EE3557500684B0B /* #.png */,
 				8D3F0D560EE3557500684B0B /* *.png */,
@@ -241,6 +244,7 @@
 				8D3F0D580EE3557500684B0B /* *.png in Resources */,
 				8DD8008E0EEC98200082C570 /* Default.png in Resources */,
 				8D0C243C0F2D100D003DA3F2 /* on.png in Resources */,
+				8D5A1E100F48C90E0032949B /* Entitlements.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -288,20 +292,49 @@
 			};
 			name = Release;
 		};
+		8D5A1DFA0F48C7140032949B /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CODE_SIGN_ENTITLEMENTS = Entitlements.plist;
+				CODE_SIGN_IDENTITY = "iPhone Distribution: Martin Wellard";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Martin Wellard";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				PREBINDING = NO;
+				PROVISIONING_PROFILE = "F645BA6D-FB9C-48A0-BF23-7B215BB32BE7";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "F645BA6D-FB9C-48A0-BF23-7B215BB32BE7";
+				SDKROOT = iphoneos2.2.1;
+			};
+			name = Distribution;
+		};
+		8D5A1DFB0F48C7140032949B /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = dtmfdecode_Prefix.pch;
+				INFOPLIST_FILE = Info.plist;
+				PRODUCT_NAME = dtmfdecode;
+			};
+			name = Distribution;
+		};
 		C01FCF4F08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos2.2]" = "iPhone Developer: Martin Wellard";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Martin Wellard";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
 				PROVISIONING_PROFILE = DefaultProfileUuid;
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "183FC1C7-0F83-4071-8C3F-6C7033E4D4F8";
 				"PROVISIONING_PROFILE[sdk=iphoneos2.1]" = DefaultProfileUuid;
-				"PROVISIONING_PROFILE[sdk=iphoneos2.2]" = "183FC1C7-0F83-4071-8C3F-6C7033E4D4F8";
-				SDKROOT = iphoneos2.1;
+				SDKROOT = iphoneos2.2.1;
 			};
 			name = Debug;
 		};
@@ -309,12 +342,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_ENTITLEMENTS = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Martin Wellard";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PREBINDING = NO;
-				SDKROOT = iphoneos2.1;
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "183FC1C7-0F83-4071-8C3F-6C7033E4D4F8";
+				SDKROOT = iphoneos2.2.1;
 			};
 			name = Release;
 		};
@@ -326,6 +361,7 @@
 			buildConfigurations = (
 				1D6058940D05DD3E006BFB54 /* Debug */,
 				1D6058950D05DD3E006BFB54 /* Release */,
+				8D5A1DFB0F48C7140032949B /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -335,6 +371,7 @@
 			buildConfigurations = (
 				C01FCF4F08A954540054247B /* Debug */,
 				C01FCF5008A954540054247B /* Release */,
+				8D5A1DFA0F48C7140032949B /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -211,15 +211,15 @@ static void recCallback (void *aqData,
 			max_index = col;
 			if ( freqpower[row] < (freqpower[col] * 0.398) )  {  // twist > 4dB, error 0.398
 				see_digit = FALSE;
-				NSLog(@"col twist");
+				//NSLog(@"col twist");
 			}
 		} else { 
 		    // if ( r[row] > r[col] ) 
 			// Reverse twist 
 			max_index = row;
-			if ( freqpower[col] < (freqpower[row] * 0.158) ) {   // twist > 8db, error 0.158
+			if ( freqpower[col] < (freqpower[row] * 0.35) ) {   // twist > 8db, error 0.158
 				//see_digit = FALSE;
-				NSLog(@"row twist");
+				//NSLog(@"row twist");
 			}
 		}
 		
