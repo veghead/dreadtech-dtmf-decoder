@@ -11,7 +11,6 @@
 
 @implementation LCDView
 
-//@synthesize a,b,c,d,e,f,g,h,i,j,k,l,m,n,o;
 
 - (id)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
@@ -56,10 +55,7 @@
 
 
 - (void)drawRect:(CGRect)rect {
-
-	NSLog(@"helloll");
-
-    // Drawing code
+    // Drawing code goes here
 }
 
 

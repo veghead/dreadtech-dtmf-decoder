@@ -17,7 +17,7 @@
 #define DEBOUNCELEN			2
 #define GAPLEN				2
 
-/*
+/* From Wikipedia:
  * coef = 2.0 * cos( (2.0 * PI * k) / (float)GOERTZEL_N)) ;
  * Where k = (int) (0.5 + ((float)GOERTZEL_N * target_freq) / SAMPLING_RATE));
  * 
