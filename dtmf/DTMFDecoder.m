@@ -188,10 +188,10 @@ static void recCallback (void *aqData,
 	/* Check for minimum energy */
 	
 	if ( freqpower[row] < 4.0e5 )  {
-		NSLog(@"row Low");
+		//NSLog(@"row Low");
 		/* energy not high enough */
 	} else if ( freqpower[col] < 4.0e5 ) {
-		NSLog(@"Col low");
+		//NSLog(@"Col low");
 		/* energy not high enough */
 	} else {
 		see_digit = TRUE;
@@ -268,7 +268,7 @@ static void recCallback (void *aqData,
 				}
 				last = *row_col_ascii_codes[row][col-4];
 			}
-			NSLog([[NSString alloc] initWithCString: row_col_ascii_codes[row][col-4]]);
+			//NSLog([[NSString alloc] initWithCString: row_col_ascii_codes[row][col-4]]);
 			return true;
 			//NSLog(@"Nothing");
 		}

@@ -19,6 +19,8 @@
 		8D3F0D570EE3557500684B0B /* #.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D3F0D550EE3557500684B0B /* #.png */; };
 		8D3F0D580EE3557500684B0B /* *.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D3F0D560EE3557500684B0B /* *.png */; };
 		8D5A1E100F48C90E0032949B /* Entitlements.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8D5A1E0F0F48C90E0032949B /* Entitlements.plist */; };
+		8D5F4BAA0FB5DDB5004AAC24 /* settings.m in Sources */ = {isa = PBXBuildFile; fileRef = 8D5F4BA90FB5DDB5004AAC24 /* settings.m */; };
+		8D5F4BAC0FB5DDD4004AAC24 /* settings.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8D5F4BAB0FB5DDD4004AAC24 /* settings.xib */; };
 		8D7D88560ED8ABE0002199B4 /* 0.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D7D884B0ED8ABE0002199B4 /* 0.png */; };
 		8D7D88570ED8ABE1002199B4 /* 1.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D7D884C0ED8ABE0002199B4 /* 1.png */; };
 		8D7D88580ED8ABE1002199B4 /* 2.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D7D884D0ED8ABE0002199B4 /* 2.png */; };
@@ -58,6 +60,9 @@
 		8D3F0D550EE3557500684B0B /* #.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "#.png"; sourceTree = "<group>"; };
 		8D3F0D560EE3557500684B0B /* *.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "*.png"; sourceTree = "<group>"; };
 		8D5A1E0F0F48C90E0032949B /* Entitlements.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Entitlements.plist; sourceTree = "<group>"; };
+		8D5F4BA80FB5DDB5004AAC24 /* settings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = settings.h; path = ../settings.h; sourceTree = "<group>"; };
+		8D5F4BA90FB5DDB5004AAC24 /* settings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = settings.m; path = ../settings.m; sourceTree = "<group>"; };
+		8D5F4BAB0FB5DDD4004AAC24 /* settings.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = settings.xib; sourceTree = "<group>"; };
 		8D7D884B0ED8ABE0002199B4 /* 0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 0.png; sourceTree = "<group>"; };
 		8D7D884C0ED8ABE0002199B4 /* 1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 1.png; sourceTree = "<group>"; };
 		8D7D884D0ED8ABE0002199B4 /* 2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 2.png; sourceTree = "<group>"; };
@@ -100,6 +105,8 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				8D5F4BA80FB5DDB5004AAC24 /* settings.h */,
+				8D5F4BA90FB5DDB5004AAC24 /* settings.m */,
 				8DE35A820ECE433600731786 /* DTMFDecoder.h */,
 				8DE35A830ECE433600731786 /* DTMFDecoder.m */,
 				1D3623240D0F684500981E51 /* dtmfdecodeAppDelegate.h */,
@@ -166,6 +173,7 @@
 				28AD733E0D9D9553002E5188 /* MainWindow.xib */,
 				8D1107310486CEB800E47090 /* Info.plist */,
 				8DD8008D0EEC98200082C570 /* Default.png */,
+				8D5F4BAB0FB5DDD4004AAC24 /* settings.xib */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -245,6 +253,7 @@
 				8DD8008E0EEC98200082C570 /* Default.png in Resources */,
 				8D0C243C0F2D100D003DA3F2 /* on.png in Resources */,
 				8D5A1E100F48C90E0032949B /* Entitlements.plist in Resources */,
+				8D5F4BAC0FB5DDD4004AAC24 /* settings.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -260,6 +269,7 @@
 				28D7ACF80DDB3853001CB0EB /* dtmfdecodeViewController.m in Sources */,
 				8DE35A840ECE433600731786 /* DTMFDecoder.m in Sources */,
 				8D7D886D0ED8C425002199B4 /* LCDView.m in Sources */,
+				8D5F4BAA0FB5DDB5004AAC24 /* settings.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -305,7 +315,7 @@
 				PREBINDING = NO;
 				PROVISIONING_PROFILE = "F645BA6D-FB9C-48A0-BF23-7B215BB32BE7";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "F645BA6D-FB9C-48A0-BF23-7B215BB32BE7";
-				SDKROOT = iphoneos2.2.1;
+				SDKROOT = iphoneos2.0;
 			};
 			name = Distribution;
 		};
@@ -334,7 +344,7 @@
 				PROVISIONING_PROFILE = DefaultProfileUuid;
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "183FC1C7-0F83-4071-8C3F-6C7033E4D4F8";
 				"PROVISIONING_PROFILE[sdk=iphoneos2.1]" = DefaultProfileUuid;
-				SDKROOT = iphoneos2.2.1;
+				SDKROOT = iphoneos2.0;
 			};
 			name = Debug;
 		};
@@ -349,7 +359,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PREBINDING = NO;
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "183FC1C7-0F83-4071-8C3F-6C7033E4D4F8";
-				SDKROOT = iphoneos2.2.1;
+				SDKROOT = iphoneos2.0;
 			};
 			name = Release;
 		};

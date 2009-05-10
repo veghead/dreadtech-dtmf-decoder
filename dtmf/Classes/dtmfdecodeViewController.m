@@ -9,7 +9,7 @@
 #import "dtmfdecodeViewController.h"
 @implementation dtmfdecodeViewController
 
-@synthesize lcdBuffer, data, decoder;
+@synthesize lcdBuffer, data, decoder, settingsViewController;
 /*
 // Override initWithNibName:bundle: to load the view using a nib file then perform additional customization that is not appropriate for viewDidLoad.
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
@@ -42,6 +42,11 @@
 	//}
 	//[self setData:d];
 	[(LCDView *)self.view setLCDString:[self.decoder detectBuffer]];
+	UIViewController *viewController = [[UIViewController alloc] initWithNibName:@"settings" bundle:nil];
+	self.settingsViewController = viewController;
+	[(settings *)settingsViewController.view setMasterController:(id *)self];
+	[viewController release];
+	
 	[NSTimer scheduledTimerWithTimeInterval:0.25 target:self selector:@selector(tick:) userInfo:self repeats:YES];	
 }
 
@@ -64,6 +69,18 @@
     // Release anything that's not essential, such as cached data
 }
 
+- (void)flipToSettings {
+	settings *settingsView = (settings *)settingsViewController.view;
+	[UIView beginAnimations:nil context:NULL];
+	[UIView setAnimationDuration:1];
+	[UIView setAnimationTransition:UIViewAnimationTransitionFlipFromLeft forView:self.view cache:YES];
+	[settingsViewController viewWillAppear:YES];
+	[self viewWillDisappear:YES];
+	[self.view addSubview:settingsView];
+	[self viewDidDisappear:YES];
+	[settingsViewController viewDidAppear:YES];
+	[UIView commitAnimations];
+}
 
 - (void)dealloc {
     [super dealloc];
@@ -77,10 +94,30 @@
 {
 }
 
+- (IBAction) settingsButtonPressed 
+{
+	NSLog(@"SETUP");
+	[self flipToSettings];
+}
+
+
 - (IBAction) clearButtonPressed
 {
 	NSLog(@"clear pressed");
 	[self.decoder resetBuffer];
 }
-
+- (void) flipBack
+{
+	NSLog(@"flipBack");
+	settings *settingsView = (settings *)settingsViewController.view;
+	[UIView beginAnimations:nil context:NULL];
+	[UIView setAnimationDuration:1];
+	[UIView setAnimationTransition:UIViewAnimationTransitionFlipFromRight forView:self.view cache:YES];
+	[settingsViewController viewWillDisappear:YES];
+	[self viewWillAppear:YES];
+	[settingsView removeFromSuperview];
+	[settingsViewController viewDidDisappear:YES];
+	[self viewDidAppear:YES];
+	[UIView commitAnimations];
+}
 @end
