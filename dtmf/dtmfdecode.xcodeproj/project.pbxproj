@@ -341,9 +341,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
-				PROVISIONING_PROFILE = DefaultProfileUuid;
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "183FC1C7-0F83-4071-8C3F-6C7033E4D4F8";
-				"PROVISIONING_PROFILE[sdk=iphoneos2.1]" = DefaultProfileUuid;
 				SDKROOT = iphoneos2.0;
 			};
 			name = Debug;
