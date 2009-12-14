@@ -21,31 +21,234 @@
  */
 
 #import "DTMFDecoder.h"
+#define MAX_HOLDING_BUFFER	 200
 
-/**
- * @brief Callback for audio handling.
- */
-static void recCallback (void *aqData,
-						 AudioQueueRef inAQ,
-						 AudioQueueBufferRef inBuffer,
-						 const AudioTimeStamp *inStartTime,
-						 UInt32 inNumPackets,
-						 const AudioStreamPacketDescription  *inPacketDesc) {
-	
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+static double	powers[NUM_FREQS];		// Location to store the powers for all the frequencies
+static double	filterBuf0[NUM_FREQS];	// Buffer for the IIR filter slot 0
+static double	filterBuf1[NUM_FREQS];	// Buffer for the IIR filter slot 1
+static char		holdingBuffer[2];
+static int		holdingBufferCount[2];
+static char		outputBuffer[200];
+static int		powerMeasurementMethod;	// 0 = Peak Value -> RMS, 1 = Sqrt of Sum of Squares, 2 = Sum of Abs Values
+static BOOL		rawOutput;
+static double	noiseTolerenceFactor;
+
+
+
+
+//Filter coefficients
+
+const struct FilterCoefficientsEntry filterCoefficients[NUM_FREQS] =
+{
+	{0.002729634465943104,	1.703076309365611,	0.994540731068114	},	//697 Hz
+	{0.003014658069540622,	1.640321076289727,	0.9939706838609188	},	//770 Hz
+	{0.003334626751652912,	1.563455998285116,	0.9933307464966943	},	//852 Hz
+	{0.003681676706860666,	1.472762296913335,	0.9926366465862788	},	//941 Hz
+	{0.00472526211613835,	1.158603326387692,	0.9905494757677233	},	//1209 Hz
+	{0.005219030413485972,	0.991170124246961,	0.989561939173028	},	//1336 Hz
+	{0.005766653227008568,	0.7940130339147109,	0.9884666935459827	},	//1477 Hz
+	{0.006371827557152048,	0.5649101144069607,	0.9872563448856961	}	//1633 Hz
+};
+
+
+
+const char dtmfCodes[4][4] =
+{
+	{'1','2','3','A'},
+	{'4','5','6','B'},
+	{'7','8','9','C'},
+	{'*','0','#','D'},
+};
+
+
+// 40ms signal 40ms off
+
+
+// BpRe/100/frequency == Bandpass resonator, Q=100 (0=>Inf), frequency 
+// e.g. ./fiview 8000 -i BpRe/100/1336
+// Generated using  http://uazu.net/fiview/
+
+double bandPassFilter(register double val, int filterIndex)
+{
+	register double tmp, fir, iir;
+	tmp= filterBuf0[filterIndex];
+	filterBuf0[filterIndex] = filterBuf1[filterIndex];
+	val *= filterCoefficients[filterIndex].unityGainCorrection;
+	iir = val+filterCoefficients[filterIndex].coeff1 * filterBuf0[filterIndex] - filterCoefficients[filterIndex].coeff2 * tmp;
+	fir = iir-tmp;
+	filterBuf1[filterIndex] = iir; val = fir;
+	return val;
+}
+
+
+
+char lookupDTMFCode(void)
+{
+	//Find the highest powered frequency index
+	int max1Index = 0;
+	for (int i=0; i<NUM_FREQS; i++)
 	{
-		SInt16 *data = inBuffer->mAudioData;
-		DTMFDecoder *decoder = aqData;
-		for(int i=0; i<inNumPackets; i++) {
-			if ([decoder running]) {
-				[decoder goertzel:data[i]];
+		if ( powers[i] >= powers[max1Index] ) max1Index = i;
+	}
+	
+	//Find the 2nd highest powered frequency index
+	int max2Index;
+	if ( max1Index == 0 )	max2Index = 1;
+	else					max2Index = 0;
+	
+	for (int i=0; i<NUM_FREQS; i++)
+	{
+		if (( powers[i] >= powers[max2Index] ) && ( i != max1Index )) max2Index = i;
+	}
+	
+	//Check that fequency 1 and 2 are substantially bigger than any other frequencies
+	BOOL valid = YES;
+	for (int i=0; i<NUM_FREQS; i++)
+	{
+		if (( i == max1Index ) || ( i == max2Index ))	continue;
+		
+		if (powers[i] > ( powers[max2Index] / noiseTolerenceFactor )) {valid = NO;break;}
+	}
+	
+	if ( valid )
+	{
+		NSLog(@"Highest Frequencies found: %d %d", max1Index, max2Index);
+		
+		//Figure out which one is a row and which one is a column
+		int row = -1;
+		int col = -1;
+		if (( max1Index >= 0 ) && ( max1Index <=3 ))	row = max1Index;
+		else											col = max1Index;
+		
+		if (( max2Index >= 4 ) && ( max2Index <=7 ))	col = max2Index;
+		else											row = max2Index;
+		
+		//Check we have both the row and column and fail if we have 2 rows or 2 columns
+		if (( row == -1 ) || ( col == -1 ))	//We have to rows or 2 cols, fail
+		{
+			//NSLog(@"We have 2 rows or 2 columns, must have gotten it wrong");
+		}
+		else	return dtmfCodes[row][col-4];		//We got it
+	}
+	
+	return ' ';
+}
+
+
+
+void AudioInputCallback(void *inUserData, 
+						AudioQueueRef inAQ, 
+						AudioQueueBufferRef inBuffer, 
+						const AudioTimeStamp *inStartTime, 
+						UInt32 inNumberPacketDescriptions, 
+						const AudioStreamPacketDescription *inPacketDescs)
+{	
+	recordState_t* recordState = (recordState_t *)inUserData;
+	
+	if ( ! recordState->recording )	NSLog(@"Not recording, returning");
+	recordState->currentPacket += inNumberPacketDescriptions;
+	
+	size_t i, numberOfSamples = inBuffer->mAudioDataByteSize / 2;
+	short *p = inBuffer->mAudioData;
+	short min,max;
+	
+	//Normalize - Aka Automatic Gain
+	min=p[0]; max=p[0];
+	for (i=0L; i<numberOfSamples; i++)
+	{
+		if ( p[i] < min )	min = p[i];
+		if ( p[i] > max )	max = p[i];
+	}
+	if ( min < 0 )		min = -min;	//abs it
+	if ( max < 0 )		max = -max;	//abs it
+	if ( max < min )	max = min;	//Pick bigger of max and min
+	
+	for (i=0L; i<numberOfSamples; i++)
+	{
+		p[i] = (short)(((double)p[i] / (double)max) * (double)32767);
+	}
+	
+	//Reset all previous power calculations
+	int t;
+	double val;
+	for (t=0; t<NUM_FREQS; t++)	powers[t] = (double)0.0;
+	
+	//Run the bandpass filter and calculate the power
+	for (i=0L; i<numberOfSamples; i++)
+	{
+		for (t=0; t<NUM_FREQS; t++)
+		{
+			//Find the highest value
+			if		( powerMeasurementMethod == 0 )
+			{
+				val= fabs(bandPassFilter((double)p[i], t));
+				if ( val > powers[t] )	powers[t] = val;
 			}
+			else if ( powerMeasurementMethod == 1 )
+			{
+				val = bandPassFilter((double)p[i], t);
+				powers[t] += val * val;				
+			}
+			else if ( powerMeasurementMethod == 2 )
+				powers[t] += fabs(bandPassFilter((double)p[i], t));
+		}
+	}
+	
+	//Scale 0 - 1, then convert into an power value
+	for (t=0; t<NUM_FREQS; t++)
+	{
+		if		( powerMeasurementMethod == 0 )	powers[t] = (powers[t] / (double)32768.0) * ((double)1.0 / sqrt((double)2.0));	
+		else if ( powerMeasurementMethod == 1 )	powers[t] = sqrt(powers[t] / (double)numberOfSamples) / (double)32768.0;
+		else if ( powerMeasurementMethod == 2 )	powers[t] = (powers[t] / (double)numberOfSamples) / (double)32768.0;
+	}
+	
+	///NSLog(@"RMS Powers: %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf", powers[0], powers[1], powers[2], powers[3], powers[4], powers[5], powers[6], powers[7]);
+	
+	//Figure out the dtmf code <space> is nothing recognized
+	char chr = lookupDTMFCode();	
+	//NSLog(@"DTMF Code: %c",chr);
+	
+	//Add it to the buffer
+	BOOL prodBuffer = NO;
+	
+	if ( chr == holdingBuffer[1] )
+	{
+		holdingBufferCount[1]++;
+		
+		//To deal with the case where we've received nothing for a while, spit out the buffer
+		if (( holdingBuffer[1] == ' ' ) && ( holdingBufferCount[1] >= 40 )) prodBuffer = YES;
+	}
+	else prodBuffer = YES;
+	
+	if ( prodBuffer )
+	{
+		//Combine the buffer entries if they're the same
+		if ( holdingBuffer[1] == holdingBuffer[0] )
+		{
+			holdingBufferCount[1] += holdingBufferCount[0];
+			holdingBuffer[0] = 0;
+			holdingBufferCount[0] = 0;
 		}
 		
-		// "plot" points for waveform and fft spectrum
-		AudioQueueEnqueueBuffer(inAQ,inBuffer,0,NULL);
+		//Archive the current value if we have more than 4 samples
+		if (( holdingBufferCount[1] >= 4 ) || ( rawOutput ))
+		{
+			if (( holdingBuffer[0] != 0 ) && ( holdingBuffer[0] != ' ' ))
+			{
+				//NSLog(@"%c", holdingBuffer[0]);
+				char tmp[20];
+				if ( rawOutput )	sprintf(tmp, "%c(%d) ", holdingBuffer[0], holdingBufferCount[0]);
+				else				sprintf(tmp, "%c", holdingBuffer[0]);
+				strcat(outputBuffer,tmp); 
+			}
+			holdingBuffer[0]		= holdingBuffer[1];
+			holdingBufferCount[0]	= holdingBufferCount[1];
+		}
+		holdingBuffer[1]		= chr;
+		holdingBufferCount[1]	= 1;			
 	}
-	[pool release];
+	
+	AudioQueueEnqueueBuffer(recordState->queue, inBuffer, 0, NULL);
 }
 
 
@@ -61,7 +264,6 @@ static void recCallback (void *aqData,
 	AudioQueueBufferRef qref[10];
 	currentFreqs = nil;
 	detectBuffer = (char *)calloc(1,DETECTBUFFERLEN);
-		
 	// these statements define the audio stream basic description
 	// for the file to record into.
 	audioFormat.mSampleRate			= SAMPLING_RATE;
@@ -72,17 +274,24 @@ static void recCallback (void *aqData,
 	audioFormat.mBitsPerChannel		= 16;
 	audioFormat.mBytesPerPacket		= 2;
 	audioFormat.mBytesPerFrame		= 2;
+	audioFormat.mReserved = 0;
 	AudioQueueRef queueObject;
-	
+
+    OSStatus status;
 	// Create the new audio queue
-	AudioQueueNewInput (&audioFormat,
-						recCallback,
-						self, // User Data
-						NULL,
-						NULL,
+	status = AudioQueueNewInput (&audioFormat,
+						AudioInputCallback,
+						&recordState, // User Data
+						CFRunLoopGetCurrent(),
+						kCFRunLoopCommonModes,
 						0, // Reserved
 						&queueObject
 						);
+	
+	if (status != 0) {
+	    NSLog(@"Can't create new input");
+		return self;
+	}
 	
 	// Get the *actual* recording format back from the queue's audio converter.
 	// We may not have been given what we asked for.
@@ -96,6 +305,7 @@ static void recCallback (void *aqData,
 	
 	if (audioFormat.mSampleRate != SAMPLING_RATE) {
 		NSLog(@"Wrong sample rate !");
+		return self;
 	}
 	
 	for (int i = 0; i < 6; ++i) {
@@ -117,209 +327,7 @@ static void recCallback (void *aqData,
 }
 
 
-/**
- * @brief calculate the correct co-efficients.
- */
-- (void) calc_coeffs
-{
-	int n;
-	char z[1024];
-	for(n = 0; n < MAX_BINS; n++) {
-		coefs[n] = 2.0 * cos(2.0 * 3.141592654 * currentFreqs[n] / SAMPLING_RATE);
-		snprintf(z,sizeof(z),"%lf %d coefs", coefs[n],n);
-		NSLog([[NSString alloc] initWithCString: z]);
-	}
-}
 
-
-- (void) setDTMF:(int)freqset
-{
-	[self setRunning: NO];
-	if (currentFreqs) {
-		free(currentFreqs);
-	}
-	double *dtfreq = calloc(MAX_BINS,sizeof(double));
-	double freqs[] = 	{
-		697,
-		770,
-		852,
-		941,
-		1209,
-		1336,
-		1477,
-		1633
-	};
-	memcpy(dtfreq,freqs,MAX_BINS * sizeof(double));
-	double *oldfreqs = currentFreqs;
-	if (oldfreqs) free(oldfreqs);
-	[self setCurrentFreqs:dtfreq];
-	[self calc_coeffs];
-	[self resetBuffer];
-	[self setRunning:YES];
-}
-
-
-/**
-  *
-  *
-  */
-- (bool) post_testing
-{
-	int         row, col, see_digit;
-	int         peak_count, max_index;
-	double      maxval, t;
-	int         i;
-	char *  row_col_ascii_codes[4][4] = {
-		{"1", "2", "3", "A"},
-		{"4", "5", "6", "B"},
-		{"7", "8", "9", "C"},
-		{"*", "0", "#", "D"}};
-
-	if (![self running] ) return false;
-	
-	// Find the largest in the row group.
-	row = 0;
-	maxval = 0.0;
-	for ( i=0; i<4; i++ ) {
-		if ( freqpower[i] > maxval ) {
-			maxval = freqpower[i];
-			row = i;
-		}
-	}
-
-
-	// Find the largest in the column group.
-	col = 4;
-	maxval = 0.0;
-	for ( i=4; i<8; i++ ) {
-		if ( freqpower[i] > maxval ) {
-			maxval = freqpower[i];
-			col = i;
-		}
-	}
-
-	
-	/* Check for minimum energy */
-	
-	if ( freqpower[row] < 4.0e5 )  {
-		//NSLog(@"row Low");
-		/* energy not high enough */
-	} else if ( freqpower[col] < 4.0e5 ) {
-		//NSLog(@"Col low");
-		/* energy not high enough */
-	} else {
-		see_digit = TRUE;
-		
-		/* Twist check
-		 * CEPT => twist < 6dB
-		 * AT&T => forward twist < 4dB and reverse twist < 8dB
-		 *  -ndB < 10 log10( v1 / v2 ), where v1 < v2
-		 *  -4dB < 10 log10( v1 / v2 )
-		 *  -0.4  < log10( v1 / v2 )
-		 *  0.398 < v1 / v2
-		 *  0.398 * v2 < v1
-		 */
-		
-		if ( freqpower[col] > freqpower[row] ) {
-			// Normal twist
-			max_index = col;
-			if ( freqpower[row] < (freqpower[col] * 0.398) )  {  // twist > 4dB, error 0.398
-				see_digit = FALSE;
-				//NSLog(@"col twist");
-			}
-		} else { 
-		    // if ( r[row] > r[col] ) 
-			// Reverse twist 
-			max_index = row;
-			if ( freqpower[col] < (freqpower[row] * 0.35) ) {   // twist > 8db, error 0.158
-				//see_digit = FALSE;
-				//NSLog(@"row twist");
-			}
-		}
-		
-		// Signal to noise test
-		// AT&T states that the noise must be 16dB down from the signal.
-		// Here we count the number of signals above the threshold and
-		// there ought to be only two.
-		//
-		if ( freqpower[max_index] > 1.0e9 ) {
-			t = freqpower[max_index] * 0.158; // 0.158
-		} else {
-			t = freqpower[max_index] * 0.010; //0.010
-		}
-		peak_count = 0;
-		int tmpledbin = 0;
-		for ( i=0; i<8; i++ ) {
-			if ( freqpower[i] > t ) {
-				peak_count++;
-				tmpledbin |= 1;
-			}
-			tmpledbin <<=1;
-		}
-		[self setLedbin:tmpledbin];
-		if ( peak_count > 2 ) {
-			see_digit = FALSE;
-		}
-		if ( ! see_digit) {
-			if (last == ' ') {
-				gaplen++;
-			} else {
-				last = ' ';
-				lastcount = 0;
-				gaplen = 0;
-			}
-		} else {
-			
-			if (last != *row_col_ascii_codes[row][col-4]) {
-				last = *row_col_ascii_codes[row][col-4];
-				lastcount = 0;
-			} else {
-				lastcount++;
-				if ((DETECTBUFFERLEN - strlen(detectBuffer) > 5) && (lastcount == DEBOUNCELEN)
-							&& (gaplen >= GAPLEN)) { 
-					strncat(detectBuffer,row_col_ascii_codes[row][col-4],DETECTBUFFERLEN);
-					
-				}
-				last = *row_col_ascii_codes[row][col-4];
-			}
-			//NSLog([[NSString alloc] initWithCString: row_col_ascii_codes[row][col-4]]);
-			return true;
-			//NSLog(@"Nothing");
-		}
-	}
-	return false;
-}
-
-
-/**
-  *  goertzel
-  */
-- (bool) goertzel:(short)sample
-{
-	double      q0;
-	UInt32       i;
-	sample_count++;
-	bool ret = false;
-	
-	if (![self running]) return false;
-	/*q1[0] = q2[0] = 0;*/
-	for ( i=0; i<MAX_BINS; i++ ) {
-		q0 = coefs[i] * q1[i] - q2[i] + sample;
-		q2[i] = q1[i];
-		q1[i] = q0;
-	}
-	
-	if (sample_count == GOERTZEL_N) {
-		for ( i=0; i<MAX_BINS; i++ ) {
-			freqpower[i] = (q1[i] * q1[i]) + (q2[i] * q2[i]) - (coefs[i] * q1[i] * q2[i]);
-			q1[i] = 0.0;
-			q2[i] = 0.0;
-		}
-		ret = [self post_testing];
-		sample_count = 0;
-	}
-	return ret;
-}
 
 
 - (void) resetBuffer
@@ -331,5 +339,93 @@ static void recCallback (void *aqData,
 		[self setRunning: YES];
 	}
 }
+//////////////////////////
+
+
+
+- (void)startRecording
+{
+	//NSLog(@"Start Recording");
+	
+	
+	recordState.currentPacket = 0;
+	
+	OSStatus status;
+	status = AudioQueueNewInput(&recordState.dataFormat,
+								AudioInputCallback,
+								&recordState,
+								CFRunLoopGetCurrent(),
+								kCFRunLoopCommonModes,
+								0,
+								&recordState.queue);
+	
+	if ( status == 0 )
+	{
+		for(int i = 0; i < NUM_BUFFERS; i++)
+		{
+			AudioQueueAllocateBuffer(recordState.queue, BUFFER_SIZE, &recordState.buffers[i]);
+			AudioQueueEnqueueBuffer(recordState.queue, recordState.buffers[i], 0, NULL);
+        }
+		
+		recordState.recording = true;        
+		status = AudioQueueStart(recordState.queue, NULL);
+		if ( status == 0 )
+		{
+			//NSLog(@"Recording");
+		}
+	}
+	
+	if ( status != 0 )	NSLog(@"Record Failed");
+}
+
+
+
+- (void)stopRecording
+{
+	//NSLog(@"Stop Recording");
+	recordState.recording = false;
+	
+	AudioQueueStop(recordState.queue, true);
+	
+	for(int i = 0; i < NUM_BUFFERS; i++)
+		AudioQueueFreeBuffer(recordState.queue, recordState.buffers[i]);
+	
+	AudioQueueDispose(recordState.queue, true);
+	AudioFileClose(recordState.audioFile);
+}
+
+
+
+//Update the power meters on the screen and add anything in the outputBuffer to the textview on the screen
+
+
+
+- (void)awakeFromNib
+{
+	// Init state variables
+	recordState.recording = false;	
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(stopRecording) name:UIApplicationWillTerminateNotification object:nil];	
+}
+
+
+
+
+- (void)loadSettings
+{
+	//noiseTolerenceFactor	= (double)(((1.0 - [MZUserDefaults floatForKey:	kPreferenceNoiseEnvironment]) * (kMaxNoiseTolerenceFactor - kMinNoiseTolerenceFactor)) + kMinNoiseTolerenceFactor);
+	//NSLog(@"Noise Tolerence Factor: %lf", noiseTolerenceFactor);
+	//rawOutput				=		  [MZUserDefaults boolForKey:	kPreferenceRawOutput];
+	//powerMeasurementMethod	=		  [MZUserDefaults integerForKey:kPreferencePowerMethod];	
+}
+
+
+
+- (void)viewDidUnload {
+	// Release any retained subviews of the main view.
+	// e.g. self.myOutlet = nil;
+}
+
+
+
 
 @end

@@ -20,12 +20,19 @@
  */
 
 #import <UIKit/UIKit.h>
+#import "dtmfdecodeViewController.h"
 
-
-@interface settings : UIView {
+@interface settings : UIView <UIPickerViewDataSource, UIPickerViewDelegate>
+{
 	id *masterController;
+	IBOutlet UISlider *powerval;
+	int switchState;
+	NSArray *powerMethods;
 }
 
+@property (readwrite) int switchState;
 @property (readwrite, assign) id *masterController;
-- (IBAction) backButtonPressed;
+- (IBAction) sliderChanged:(id)sender;
+- (void)setup;
+- (IBAction) flipBack;
 @end

@@ -42,8 +42,9 @@
 - (IBAction) sendButtonPressed;
 - (IBAction) settingsButtonPressed;
 - (IBAction) clearButtonPressed;
+- (IBAction) flipBack;
 - (void) flipToSettings;
 - (void) tick: (NSTimer *)timer;
 
-@end
 
+@end

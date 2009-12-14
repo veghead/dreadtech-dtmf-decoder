@@ -1,4 +1,5 @@
 /*
+ 
  $Id$
  
  Dreadtech DTMF Decoder - Copyright 2009 Martin Wellard
@@ -24,29 +25,65 @@
 
 @implementation settings
 @synthesize masterController;
+@synthesize switchState;
 
-- (id)initWithFrame:(CGRect)frame {
-    if (self = [super initWithFrame:frame]) {
-		// Initialization code
-    }
-    return self;
+
+- (void)setup {
+	NSLog(@"erewego");
+	powerMethods = [[NSArray arrayWithObjects:@"Peak Value RMS", @"Sqrt Sum Squares", @"Sum Abs", nil] retain];
 }
 
-
 - (void)drawRect:(CGRect)rect {
+	[self setSwitchState:1];
     // Drawing code
 }
 
 
 - (void)dealloc {
+	[powerMethods release];
     [super dealloc];
 }
 
-- (IBAction) backButtonPressed
+- (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView
 {
-	NSLog(@"back");
-	[masterController flipBack];
+	return 1;
 }
 
+
+
+- (NSInteger)pickerView:(UIPickerView *)pickerView
+numberOfRowsInComponent:(NSInteger)component
+{
+	return [powerMethods count];
+}
+
+
+
+- (NSString *)pickerView:(UIPickerView *)pickerView
+			 titleForRow:(NSInteger)row
+			forComponent:(NSInteger)component
+{
+	return [powerMethods objectAtIndex:row];
+}
+
+
+
+- (void)pickerView:(UIPickerView *)pickerView
+	  didSelectRow:(NSInteger)row
+	   inComponent:(NSInteger)component
+{
+	//[MZUserDefaults writeIntegerForKey:kPreferencePowerMethod value:row];
+}
+
+- (IBAction) sliderChanged:(id)sender
+{
+	NSLog(@"hello");
+}
+
+- (IBAction) flipBack
+{
+	NSLog(@"flipBack");
+	[masterController flipBack];
+}
 
 @end

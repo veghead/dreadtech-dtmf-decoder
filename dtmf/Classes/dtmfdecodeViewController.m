@@ -47,18 +47,12 @@
     [super viewDidLoad];
 	[self.view setNeedsLayout];
 	DTMFDecoder *dec = [[DTMFDecoder alloc] init];
-	[dec setDTMF:1];
 	[self setDecoder:dec];
-	//NSData *d = [NSData dataWithContentsOfRL:[NSURL URLWithString:@"http://fatsquirrel.org/dtmf.raw"]];
-	//UInt16 *dod = (UInt16 *)[d bytes];
-	//for (int i = 0; i < [d length]/2; i++) {
-	//	[self.decoder goertzel:dod[i]];
-	//}
-	//[self setData:d];
 	[(LCDView *)self.view setLCDString:[self.decoder detectBuffer]];
 	UIViewController *viewController = [[UIViewController alloc] initWithNibName:@"settings" bundle:nil];
 	self.settingsViewController = viewController;
-	[(settings *)settingsViewController.view setMasterController:(id *)self];
+	[(settings *)settingsViewController.view setMasterController:self];
+	[(settings *)settingsViewController.view setup];
 	[viewController release];
 	
 	[NSTimer scheduledTimerWithTimeInterval:0.25 target:self selector:@selector(tick:) userInfo:self repeats:YES];	
@@ -121,7 +115,9 @@
 	NSLog(@"clear pressed");
 	[self.decoder resetBuffer];
 }
-- (void) flipBack
+
+
+- (IBAction) flipBack
 {
 	NSLog(@"flipBack");
 	settings *settingsView = (settings *)settingsViewController.view;
@@ -135,4 +131,6 @@
 	[self viewDidAppear:YES];
 	[UIView commitAnimations];
 }
+
+
 @end

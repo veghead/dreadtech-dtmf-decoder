@@ -22,27 +22,44 @@
 #import <AudioToolbox/AudioQueue.h>
 #import <AudioToolbox/AudioFile.h>
 
-#define SAMPLING_RATE       8000
-#define MAX_BINS            8
-#define GOERTZEL_N          93
-#define DETECTBUFFERLEN		8192
+#define SAMPLING_RATE       8000.0
 #define DEBOUNCELEN			2
 #define GAPLEN				2
+#define NUM_BUFFERS			3
+#define DETECTBUFFERLEN     8192
 
-/* From Wikipedia:
- * coef = 2.0 * cos( (2.0 * PI * k) / (float)GOERTZEL_N)) ;
- * Where k = (int) (0.5 + ((float)GOERTZEL_N * target_freq) / SAMPLING_RATE));
- * 
- * More simply: coef = 2.0 * cos( (2.0 * PI * target_freq) / SAMPLING_RATE );
- */
+#define MIN_TONE_LENGTH		0.045	//45ms
+#define FRAMES_PER_TONE		4
+#define BYTES_PER_CHANNEL	2
+#define BUFFER_SIZE			(((int)(MIN_TONE_LENGTH / (1.0/SAMPLING_RATE)) * BYTES_PER_CHANNEL) / FRAMES_PER_TONE )
+
+#define NUM_FREQS	8	//The number of dtmf frequencies aka band pass filters
+#define kMinNoiseTolerenceFactor	1.5
+#define kMaxNoiseTolerenceFactor	6.5
+
+
+struct FilterCoefficientsEntry
+{
+	double unityGainCorrection;
+	double coeff1;
+	double coeff2;
+};
+
+typedef struct
+{
+	AudioStreamBasicDescription dataFormat;
+	AudioQueueRef				queue;
+	AudioQueueBufferRef			buffers[NUM_BUFFERS];
+	BOOL						recording;
+	AudioFileID					audioFile;
+	SInt64						currentPacket;
+	short						filteredBuffer[BUFFER_SIZE];
+} recordState_t;
+
 
 @interface DTMFDecoder : NSObject {	
 	AudioStreamBasicDescription audioFormat;
 	int         sample_count;
-	double      q1[ MAX_BINS ];
-	double      q2[ MAX_BINS ];
-	double      freqpower[ MAX_BINS ];
-	double      coefs[ MAX_BINS ] ;
 	double		*currentFreqs;
 	int			lastcount;
 	int			gaplen;
@@ -50,6 +67,7 @@
 	int			ledbin;
 	char		*detectBuffer;
 	bool		running;
+	recordState_t recordState;
 }
 
 @property (assign) int lastcount;
@@ -59,9 +77,5 @@
 @property (readwrite) bool running;
 
 - (id) init;
-- (void) calc_coeffs;
-- (bool) goertzel:(short)sample;
-- (void) setDTMF:(int)freqset;
 - (void) resetBuffer;
-- (bool) post_testing;
 @end
