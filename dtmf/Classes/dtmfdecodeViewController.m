@@ -60,7 +60,7 @@
 
 
 
-- (void) tick: (NSTimer *)timer
+- (void)tick:(NSTimer *)timer
 {
 	[(LCDView *)self.view setLCDString:[self.decoder detectBuffer]];
 	[(LCDView *)self.view setLEDs:[self.decoder ledbin]];
