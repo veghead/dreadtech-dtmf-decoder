@@ -44,16 +44,17 @@
 
 // Implement viewDidLoad to do additional setup after loading the view.
 - (void)viewDidLoad {
-    [super viewDidLoad];
+	[super viewDidLoad];
 	[self.view setNeedsLayout];
 	DTMFDecoder *dec = [[DTMFDecoder alloc] init];
 	[self setDecoder:dec];
 	[(LCDView *)self.view setLCDString:[self.decoder detectBuffer]];
-	UIViewController *viewController = [[UIViewController alloc] initWithNibName:@"settings" bundle:nil];
-	self.settingsViewController = viewController;
-	[(settings *)settingsViewController.view setMasterController:self];
-	[(settings *)settingsViewController.view setup];
-	[viewController release];
+	UIViewController *settingsVC = [[UIViewController alloc] initWithNibName:@"settings" bundle:nil];
+	[settingsVC loadView];
+	[self setSettingsViewController:settingsVC];
+	[(settings *)settingsVC.view setMasterController:(id *)self];
+	[(settings *)settingsVC.view setup];
+	[settingsVC release];
 	
 	[NSTimer scheduledTimerWithTimeInterval:0.25 target:self selector:@selector(tick:) userInfo:self repeats:YES];	
 }
@@ -65,6 +66,7 @@
 	[(LCDView *)self.view setLCDString:[self.decoder detectBuffer]];
 	[(LCDView *)self.view setLEDs:[self.decoder ledbin]];
 }
+
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
     // Return YES for supported orientations
@@ -132,5 +134,10 @@
 	[UIView commitAnimations];
 }
 
+
+- (void) setNoiseLevel:(float)noiseLevel
+{
+	[self.decoder setNoiseLevel:noiseLevel];
+}
 
 @end

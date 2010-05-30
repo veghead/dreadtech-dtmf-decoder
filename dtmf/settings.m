@@ -24,8 +24,7 @@
 
 
 @implementation settings
-@synthesize masterController;
-@synthesize switchState;
+@synthesize masterController, switchState;
 
 
 - (void)setup {
@@ -35,14 +34,14 @@
 
 - (void)drawRect:(CGRect)rect {
 	[self setSwitchState:1];
-    // Drawing code
 }
 
 
 - (void)dealloc {
 	[powerMethods release];
-    [super dealloc];
+	[super dealloc];
 }
+
 
 - (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView
 {
@@ -72,18 +71,26 @@ numberOfRowsInComponent:(NSInteger)component
 	  didSelectRow:(NSInteger)row
 	   inComponent:(NSInteger)component
 {
-	//[MZUserDefaults writeIntegerForKey:kPreferencePowerMethod value:row];
+	
 }
 
-- (IBAction) sliderChanged:(id)sender
-{
-	NSLog(@"hello");
-}
 
 - (IBAction) flipBack
 {
 	NSLog(@"flipBack");
-	[masterController flipBack];
+	[(dtmfdecodeViewController *) masterController setNoiseLevel:[backgroundLevel value]];
+	[(dtmfdecodeViewController *) masterController flipBack];
 }
+
+
+- (void) setPowerMethod:(NSInteger)method
+{
+}
+
+
+- (void) setNoiseLevel:(NSInteger)level
+{
+}
+
 
 @end

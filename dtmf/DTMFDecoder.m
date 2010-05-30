@@ -1,5 +1,4 @@
-/*
- 
+/* 
  $Id$
  
  Dreadtech DTMF Decoder - Copyright 2009 Martin Wellard
@@ -21,7 +20,10 @@
  */
 
 #import "DTMFDecoder.h"
-#define MAX_HOLDING_BUFFER	 200
+#define MAX_HOLDING_BUFFER			200
+
+#define kMinNoiseTolerenceFactor	1.5
+#define kMaxNoiseTolerenceFactor	6.5
 
 static double	powers[NUM_FREQS];		// Location to store the powers for all the frequencies
 static double	filterBuf0[NUM_FREQS];	// Buffer for the IIR filter slot 0
@@ -60,13 +62,10 @@ const char dtmfCodes[4][4] =
 };
 
 
-// 40ms signal 40ms off
-
 
 // BpRe/100/frequency == Bandpass resonator, Q=100 (0=>Inf), frequency 
 // e.g. ./fiview 8000 -i BpRe/100/1336
 // Generated using  http://uazu.net/fiview/
-
 double bandPassFilter(register double val, int filterIndex)
 {
 	register double tmp, fir, iir;
@@ -75,7 +74,8 @@ double bandPassFilter(register double val, int filterIndex)
 	val *= filterCoefficients[filterIndex].unityGainCorrection;
 	iir = val+filterCoefficients[filterIndex].coeff1 * filterBuf0[filterIndex] - filterCoefficients[filterIndex].coeff2 * tmp;
 	fir = iir-tmp;
-	filterBuf1[filterIndex] = iir; val = fir;
+	filterBuf1[filterIndex] = iir; 
+	val = fir;
 	return val;
 }
 
@@ -83,22 +83,26 @@ double bandPassFilter(register double val, int filterIndex)
 
 char lookupDTMFCode(void)
 {
-	//Find the highest powered frequency index
+	// Find the highest powered frequency index
 	int max1Index = 0;
 	for (int i=0; i<NUM_FREQS; i++) {
 		if ( powers[i] >= powers[max1Index] ) max1Index = i;
 	}
 	
-	//Find the 2nd highest powered frequency index
+	// Find the 2nd highest powered frequency index
 	int max2Index;
-	if ( max1Index == 0 )	max2Index = 1;
-	else					max2Index = 0;
+	
+	if ( max1Index == 0 ) {
+		max2Index = 1;
+	} else {
+		max2Index = 0;
+	}
 	
 	for (int i=0; i<NUM_FREQS; i++) {
 		if (( powers[i] >= powers[max2Index] ) && ( i != max1Index )) max2Index = i;
 	}
 	
-	//Check that fequency 1 and 2 are substantially bigger than any other frequencies
+	// Check that fequency 1 and 2 are substantially bigger than any other frequencies
 	BOOL valid = YES;
 	for (int i=0; i<NUM_FREQS; i++) {
 		if (( i == max1Index ) || ( i == max2Index ))	continue;
@@ -107,25 +111,32 @@ char lookupDTMFCode(void)
 	}
 	
 	if ( valid ) {
-		NSLog(@"Highest Frequencies found: %d %d", max1Index, max2Index);
+		// NSLog(@"Highest Frequencies found: %d %d", max1Index, max2Index);
 		
-		//Figure out which one is a row and which one is a column
+		// Figure out which one is a row and which one is a column
 		int row = -1;
 		int col = -1;
-		if (( max1Index >= 0 ) && ( max1Index <=3 ))	row = max1Index;
-		else											col = max1Index;
+		if (( max1Index >= 0 ) && ( max1Index <=3 ))	{
+			row = max1Index;
+		} else	{
+			col = max1Index;
+		}
 		
-		if (( max2Index >= 4 ) && ( max2Index <=7 ))	col = max2Index;
-		else											row = max2Index;
+		if (( max2Index >= 4 ) && ( max2Index <=7 ))	{
+			col = max2Index;
+		} else {
+			row = max2Index;
+		}
 		
 		// Check we have both the row and column and fail if we have 2 rows or 2 columns
 		if (( row == -1 ) || ( col == -1 )) {
 			// We have to rows or 2 cols, fail
-			NSLog(@"We have 2 rows or 2 columns, must have gotten it wrong");
+			//NSLog(@"We have 2 rows or 2 columns, must have gotten it wrong");
+		} else {
+			NSLog(@"%c",dtmfCodes[row][col-4]);
+			return dtmfCodes[row][col-4];		// We got it
 		}
-		else return dtmfCodes[row][col-4];		//We got it
 	}
-	
 	return ' ';
 }
 
@@ -139,7 +150,9 @@ void AudioInputCallback(void *inUserData,
 						const AudioStreamPacketDescription *inPacketDescs)
 {	
 	recordState_t* recordState = (recordState_t *)inUserData;
-	NSLog(@"Tick");
+	
+	// NSLog(@"Tick");
+
 	if ( ! recordState->recording ) NSLog(@"Not recording, returning");
 	
 	recordState->currentPacket += inNumberPacketDescriptions;
@@ -154,57 +167,62 @@ void AudioInputCallback(void *inUserData,
 		if ( p[i] < min )	min = p[i];
 		if ( p[i] > max )	max = p[i];
 	}
-	if ( min < 0 )		min = -min;	//abs it
-	if ( max < 0 )		max = -max;	//abs it
-	if ( max < min )	max = min;	//Pick bigger of max and min
+	min = abs(min);
+	max = abs(max);
+	if ( max < min )	max = min;			// Pick bigger of max and min
 	
-	for (i=0L; i<numberOfSamples; i++)
-	{
+	for (i=0L; i<numberOfSamples; i++)	{
 		p[i] = (short)(((double)p[i] / (double)max) * (double)32767);
 	}
 	
-	//Reset all previous power calculations
+	// Reset all previous power calculations
 	int t;
 	double val;
-	for (t=0; t< NUM_FREQS; t++)	powers[t] = (double)0.0;
+
+	for (t=0; t< NUM_FREQS; t++) {
+		powers[t] = (double)0.0;
+	}
 	
-	//Run the bandpass filter and calculate the power
-	for (i=0L; i<numberOfSamples; i++)
-	{
-		for (t=0; t< NUM_FREQS; t++)
-		{
-			//Find the highest value
+	// Run the bandpass filter and calculate the power
+	for (i=0L; i<numberOfSamples; i++)	 {
+		for (t=0; t< NUM_FREQS; t++) {
+			
+			// Find the highest value
 			switch(powerMeasurementMethod) {
-					
-			if	( powerMeasurementMethod == 0 ) {
-				val= fabs(bandPassFilter((double)p[i], t));
-				if ( val > powers[t] )	powers[t] = val;
+				case 0:
+					val = fabs(bandPassFilter((double)p[i], t));
+					if ( val > powers[t] )	powers[t] = val;
+					break;
+				case 1:
+					val = bandPassFilter((double)p[i], t);
+					powers[t] += val * val;	
+					break;
+				default:
+					powers[t] += fabs(bandPassFilter((double)p[i], t));
+					break;
 			}
-			else if ( powerMeasurementMethod == 1 )
-			{
-				val = bandPassFilter((double)p[i], t);
-				powers[t] += val * val;				
-			}
-			else if ( powerMeasurementMethod == 2 )
-				powers[t] += fabs(bandPassFilter((double)p[i], t));
 		}
 	}
 	
-	//Scale 0 - 1, then convert into an power value
-	for (t=0; t<NUM_FREQS; t++)
-	{
-		if		( powerMeasurementMethod == 0 )	powers[t] = (powers[t] / (double)32768.0) * ((double)1.0 / sqrt((double)2.0));	
-		else if ( powerMeasurementMethod == 1 )	powers[t] = sqrt(powers[t] / (double)numberOfSamples) / (double)32768.0;
-		else if ( powerMeasurementMethod == 2 )	powers[t] = (powers[t] / (double)numberOfSamples) / (double)32768.0;
+	// Scale 0 - 1, then convert into an power value
+	for (t=0; t<NUM_FREQS; t++) {
+		switch ( powerMeasurementMethod ) {
+			case 0:
+				powers[t] = (powers[t] / (double)32768.0) * ((double)1.0 / sqrt((double)2.0));
+				break;
+			case 1:
+				powers[t] = sqrt(powers[t] / (double)numberOfSamples) / (double)32768.0;
+				break;
+			default:
+				powers[t] = (powers[t] / (double)numberOfSamples) / (double)32768.0;
+				break;
+		}
 	}
 	
-	NSLog(@"RMS Powers: %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf", powers[0], powers[1], powers[2], powers[3], powers[4], powers[5], powers[6], powers[7]);
+	//NSLog(@"RMS Powers: %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf", powers[0], powers[1], powers[2], powers[3], powers[4], powers[5], powers[6], powers[7]);
 	
 	//Figure out the dtmf code <space> is nothing recognized
 	char chr = lookupDTMFCode();	
-	NSLog(@"DTMF Code: %c",chr);
-	AudioQueueEnqueueBuffer(recordState->queue, inBuffer, 0, NULL);
-	return;
 	
 	//Add it to the buffer
 	bool prodBuffer = false;
@@ -218,32 +236,32 @@ void AudioInputCallback(void *inUserData,
 		prodBuffer = true;
 	}
 	
-	if ( prodBuffer ) 	{
-		//Combine the buffer entries if they're the same
+	if ( prodBuffer ) {
+		// Combine the buffer entries if they're the same
 		if ( holdingBuffer[1] == holdingBuffer[0] ) {
 			holdingBufferCount[1] += holdingBufferCount[0];
 			holdingBuffer[0] = 0;
 			holdingBufferCount[0] = 0;
 		}
 		
-		//Archive the current value if we have more than 4 samples
-		if (( holdingBufferCount[1] >= 4 ) || ( rawOutput ))
-		{
-			if (( holdingBuffer[0] != 0 ) && ( holdingBuffer[0] != ' ' ))
-			{
+		// Archive the current value if we have more than 4 samples
+		if (( holdingBufferCount[1] >= 4 ) || ( rawOutput )) {
+			if (( holdingBuffer[0] != 0 ) && ( holdingBuffer[0] != ' ' ))	{
 				//NSLog(@"%c", holdingBuffer[0]);
 				char tmp[20];
-				if ( rawOutput )	sprintf(tmp, "%c(%d) ", holdingBuffer[0], holdingBufferCount[0]);
-				else				sprintf(tmp, "%c", holdingBuffer[0]);
+				if ( rawOutput )	{
+					sprintf(tmp, "%c(%d) ", holdingBuffer[0], holdingBufferCount[0]);
+				} else {
+					sprintf(tmp, "%c", holdingBuffer[0]);
+				}
 				strcat(outputBuffer,tmp); 
 			}
-			holdingBuffer[0]		= holdingBuffer[1];
-			holdingBufferCount[0]	= holdingBufferCount[1];
+			holdingBuffer[0]	= holdingBuffer[1];
+			holdingBufferCount[0] = holdingBufferCount[1];
 		}
-		holdingBuffer[1]		= chr;
-		holdingBufferCount[1]	= 1;			
-	}
-	
+		holdingBuffer[1] = chr;
+		holdingBufferCount[1] = 1;			
+	}	
 	AudioQueueEnqueueBuffer(recordState->queue, inBuffer, 0, NULL);
 }
 
@@ -256,10 +274,18 @@ void AudioInputCallback(void *inUserData,
 -(id) init
 {
 	[super init];
+	defaults = [NSUserDefaults standardUserDefaults];
 	[self setCurrentFreqs:nil];
+	[self startRecording];
+	return self;
+}
+
+-(void) startRecording
+{
 	AudioQueueBufferRef qref[10];
 	currentFreqs = nil;
 	detectBuffer = (char *)calloc(1,DETECTBUFFERLEN);
+	
 	// these statements define the audio stream basic description
 	// for the file to record into.
 	audioFormat.mSampleRate			= SAMPLING_RATE;
@@ -270,10 +296,12 @@ void AudioInputCallback(void *inUserData,
 	audioFormat.mBitsPerChannel		= 16;
 	audioFormat.mBytesPerPacket		= 2;
 	audioFormat.mBytesPerFrame		= 2;
-	audioFormat.mReserved = 0;
+	audioFormat.mReserved			= 0;
 	
 
-    OSStatus status;
+	OSStatus status;
+	
+	
 	// Create the new audio queue
 	status = AudioQueueNewInput (&audioFormat,
 						AudioInputCallback,
@@ -286,7 +314,7 @@ void AudioInputCallback(void *inUserData,
 	
 	if (status != 0) {
 	    NSLog(@"Can't create new input");
-		return self;
+		return;
 	}
 	
 	// Get the *actual* recording format back from the queue's audio converter.
@@ -301,7 +329,7 @@ void AudioInputCallback(void *inUserData,
 	
 	if (audioFormat.mSampleRate != SAMPLING_RATE) {
 		NSLog(@"Wrong sample rate !");
-		return self;
+		return;
 	}
 	
 	for (int i = 0; i < NUM_BUFFERS; ++i) {
@@ -319,7 +347,7 @@ void AudioInputCallback(void *inUserData,
 	NSLog(@"started queue");
 	recordState.recording = true; 
 	running = YES;
-	return self;
+	return;
 	// Animation timer	
 }
 
@@ -336,42 +364,9 @@ void AudioInputCallback(void *inUserData,
 		[self setRunning: YES];
 	}
 }
+
+
 //////////////////////////
-
-
-
-- (void)startRecording
-{
-	NSLog(@"Start Recording");
-	
-	
-	recordState.currentPacket = 0;
-	
-	OSStatus status;
-	status = AudioQueueNewInput(&recordState.dataFormat,
-								AudioInputCallback,
-								&recordState,
-								CFRunLoopGetCurrent(),
-								kCFRunLoopCommonModes,
-								0,
-								&recordState.queue);
-	
-	if ( status == 0 ) {
-		for(int i = 0; i < NUM_BUFFERS; i++) {
-			AudioQueueAllocateBuffer(recordState.queue, BUFFER_SIZE, &recordState.buffers[i]);
-			AudioQueueEnqueueBuffer(recordState.queue, recordState.buffers[i], 0, NULL);
-        }
-		
-		recordState.recording = true;        
-		status = AudioQueueStart(recordState.queue, NULL);
-		if ( status == 0 ) {
-			NSLog(@"Recording");
-		} else {
-			NSLog(@"Arses");
-		}
-	}
-	if ( status != 0 )	NSLog(@"Record Failed %d", status);
-}
 
 
 
@@ -403,10 +398,12 @@ void AudioInputCallback(void *inUserData,
 
 - (void)loadSettings
 {
-	//noiseTolerenceFactor	= (double)(((1.0 - [MZUserDefaults floatForKey:	kPreferenceNoiseEnvironment]) * (kMaxNoiseTolerenceFactor - kMinNoiseTolerenceFactor)) + kMinNoiseTolerenceFactor);
-	//NSLog(@"Noise Tolerence Factor: %lf", noiseTolerenceFactor);
-	//rawOutput				=		  [MZUserDefaults boolForKey:	kPreferenceRawOutput];
-	//powerMeasurementMethod	=		  [MZUserDefaults integerForKey:kPreferencePowerMethod];	
+	float noiseLevel = [defaults floatForKey:@"noiseLevel"];
+	if (noiseLevel == 0) noiseLevel = 0.5;
+	[self setNoiseLevel:noiseLevel];
+	NSInteger powerMethod = [defaults integerForKey:@"powerMethod"];
+	
+	[self setPowerMethod:powerMethod];
 }
 
 
@@ -416,6 +413,23 @@ void AudioInputCallback(void *inUserData,
 	// e.g. self.myOutlet = nil;
 }
 
+
+- (void) setNoiseLevel:(float)noiseLevel
+{
+	if (noiseLevel <= 0 || noiseLevel >1) noiseLevel = 0.5;
+	noiseTolerenceFactor	= (double)(((1.0 - noiseLevel) * (kMaxNoiseTolerenceFactor - kMinNoiseTolerenceFactor)) + kMinNoiseTolerenceFactor);
+	NSLog(@"Noise Tolerence Factor: %lf", noiseTolerenceFactor);
+	[defaults setFloat:noiseLevel forKey:@"noiseLevel"];
+}
+
+
+- (void) setPowerMethod:(NSInteger)powerMethod
+{
+	if (powerMethod > 2 || powerMethod < 0) powerMethod = 1;
+	powerMeasurementMethod = powerMethod;
+	NSLog(@"Noise Tolerence Factor: %d", powerMethod);
+	[defaults setInteger:powerMethod forKey:@"powerMethod"];
+}
 
 
 

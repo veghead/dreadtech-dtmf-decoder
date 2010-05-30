@@ -25,14 +25,16 @@
 @interface settings : UIView <UIPickerViewDataSource, UIPickerViewDelegate>
 {
 	id *masterController;
-	IBOutlet UISlider *powerval;
 	int switchState;
 	NSArray *powerMethods;
+	IBOutlet UISlider *backgroundLevel;
 }
+
 
 @property (readwrite) int switchState;
 @property (readwrite, assign) id *masterController;
-- (IBAction) sliderChanged:(id)sender;
 - (void)setup;
 - (IBAction) flipBack;
+- (void) setPowerMethod:(NSInteger)method;
+- (void) setNoiseLevel:(NSInteger)level;
 @end

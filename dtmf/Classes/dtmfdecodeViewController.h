@@ -25,6 +25,8 @@
 #import "DTMFDecoder.h"
 #import "settings.h"
 
+
+
 @interface dtmfdecodeViewController : UIViewController {
 	char *lcdBuffer;
 	int mode;
@@ -33,10 +35,10 @@
 	UIViewController *settingsViewController;
 }
 
-@property (nonatomic, retain) UIViewController *settingsViewController;
-@property (readwrite, retain) DTMFDecoder *decoder;
-@property (readwrite, assign) NSData *data;
-@property (readwrite, assign) char *lcdBuffer;
+@property (nonatomic, retain)	UIViewController *settingsViewController;
+@property (readwrite, retain)	DTMFDecoder *decoder;
+@property (readwrite, assign)	NSData *data;
+@property (readwrite, assign)	char *lcdBuffer;
 
 - (IBAction) modeButtonPressed;
 - (IBAction) sendButtonPressed;
@@ -45,6 +47,7 @@
 - (IBAction) flipBack;
 - (void) flipToSettings;
 - (void) tick: (NSTimer *)timer;
+- (void) setNoiseLevel:(float) noiseLevel;
 
 
 @end

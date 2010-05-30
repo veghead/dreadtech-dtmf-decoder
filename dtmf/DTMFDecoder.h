@@ -67,14 +67,20 @@ typedef struct
 	char		*detectBuffer;
 	bool		running;
 	recordState_t recordState;
+	NSUserDefaults	*defaults;	
+
 }
 
-@property (assign) int lastcount;
-@property (assign) double *currentFreqs;
-@property (assign) char *detectBuffer;
-@property (assign)	int ledbin;
-@property (readwrite) bool running;
+@property (assign)		int lastcount;
+@property (assign)		double *currentFreqs;
+@property (assign)		char *detectBuffer;
+@property (assign)		int ledbin;
+@property (readwrite)	bool running;
 
 - (id) init;
 - (void) resetBuffer;
+- (void) startRecording;
+- (void) setPowerMethod:(NSInteger)powerMethod;
+- (void) setNoiseLevel:(float)noiseLevel;
+
 @end
