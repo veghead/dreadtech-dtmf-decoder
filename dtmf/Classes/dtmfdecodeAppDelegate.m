@@ -2,7 +2,7 @@
  
  $Id$
  
- Dreadtech DTMF Decoder - Copyright 2009 Martin Wellard
+ Dreadtech DTMF Decoder - Copyright 2010 Martin Wellard
  
  This file is part of Dreadtech DTMF Decoder.
  
