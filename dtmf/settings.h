@@ -27,7 +27,8 @@
 	id *masterController;
 	int switchState;
 	NSArray *powerMethods;
-	IBOutlet UISlider *backgroundLevel;
+	IBOutlet UISlider *backgroundLevel; 
+	IBOutlet UIPickerView *powerPicker;
 }
 
 
@@ -35,6 +36,7 @@
 @property (readwrite, assign) id *masterController;
 - (void)setup;
 - (IBAction) flipBack;
+- (IBAction) resetDefaults;
 - (void) setPowerMethod:(NSInteger)method;
-- (void) setNoiseLevel:(NSInteger)level;
+- (void) setNoiseLevel:(float)level;
 @end

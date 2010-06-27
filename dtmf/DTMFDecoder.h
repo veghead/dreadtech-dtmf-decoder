@@ -33,8 +33,8 @@
 #define BYTES_PER_CHANNEL	2
 #define BUFFER_SIZE			(((int)(MIN_TONE_LENGTH / (1.0/SAMPLING_RATE)) * BYTES_PER_CHANNEL) / FRAMES_PER_TONE )
 
-#define NUM_FREQS				8				// The number of dtmf frequencies (band pass filters)#define kMinNoiseTolerenceFactor	1.5
-#define kMaxNoiseTolerenceFactor	6.5
+#define NUM_FREQS				8		// The number of dtmf frequencies (band pass filters)
+
 
 
 struct FilterCoefficientsEntry
@@ -53,6 +53,8 @@ typedef struct
 	AudioFileID				audioFile;
 	SInt64						currentPacket;
 	short						filteredBuffer[BUFFER_SIZE];
+	id							*decoderObject;
+	char						*detectBuffer;
 } recordState_t;
 
 
@@ -64,16 +66,15 @@ typedef struct
 	int			gaplen;
 	char		last;
 	int			ledbin;
-	char		*detectBuffer;
 	bool		running;
 	recordState_t recordState;
+	UIPasteboard *uip;
 	NSUserDefaults	*defaults;	
 
 }
 
 @property (assign)		int lastcount;
 @property (assign)		double *currentFreqs;
-@property (assign)		char *detectBuffer;
 @property (assign)		int ledbin;
 @property (readwrite)	bool running;
 
@@ -82,5 +83,9 @@ typedef struct
 - (void) startRecording;
 - (void) setPowerMethod:(NSInteger)powerMethod;
 - (void) setNoiseLevel:(float)noiseLevel;
-
+- (void) loadSettings;
+- (float) getNoiseLevel;
+- (NSInteger) getPowerMethod;
+- (char *) getDetectBuffer;
+- (void) copyBuffer;
 @end

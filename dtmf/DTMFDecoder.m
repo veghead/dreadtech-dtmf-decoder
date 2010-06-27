@@ -30,7 +30,6 @@ static double	filterBuf0[NUM_FREQS];	// Buffer for the IIR filter slot 0
 static double	filterBuf1[NUM_FREQS];	// Buffer for the IIR filter slot 1
 static char	holdingBuffer[2];
 static int		holdingBufferCount[2];
-static char	outputBuffer[200];
 static int		powerMeasurementMethod;	// 0 = Peak Value -> RMS, 1 = Sqrt of Sum of Squares, 2 = Sum of Abs Values
 static BOOL	rawOutput;
 static double	noiseTolerenceFactor;
@@ -133,7 +132,7 @@ char lookupDTMFCode(void)
 			// We have to rows or 2 cols, fail
 			//NSLog(@"We have 2 rows or 2 columns, must have gotten it wrong");
 		} else {
-			NSLog(@"%c",dtmfCodes[row][col-4]);
+			NSLog(@"DTMFcodey %c",dtmfCodes[row][col-4]);
 			return dtmfCodes[row][col-4];		// We got it
 		}
 	}
@@ -151,8 +150,6 @@ void AudioInputCallback(void *inUserData,
 {	
 	recordState_t* recordState = (recordState_t *)inUserData;
 	
-	// NSLog(@"Tick");
-
 	if ( ! recordState->recording ) NSLog(@"Not recording, returning");
 	
 	recordState->currentPacket += inNumberPacketDescriptions;
@@ -160,7 +157,7 @@ void AudioInputCallback(void *inUserData,
 	size_t i, numberOfSamples = inBuffer->mAudioDataByteSize / 2;
 	short *p = inBuffer->mAudioData;
 	short min,max;
-	
+
 	// Normalize - AKA Automatic Gain
 	min=p[0]; max=p[0];
 	for (i=0L; i<numberOfSamples; i++) {
@@ -219,24 +216,24 @@ void AudioInputCallback(void *inUserData,
 		}
 	}
 	
-	//NSLog(@"RMS Powers: %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf", powers[0], powers[1], powers[2], powers[3], powers[4], powers[5], powers[6], powers[7]);
+	// NSLog(@"RMS Powers: %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf", powers[0], powers[1], powers[2], powers[3], powers[4], powers[5], powers[6], powers[7]);
 	
-	//Figure out the dtmf code <space> is nothing recognized
+	// Figure out the dtmf code <space> is nothing recognized
 	char chr = lookupDTMFCode();	
 	
-	//Add it to the buffer
-	bool prodBuffer = false;
-	
+	// Add it to the buffer
+	bool showBuffer = false;
+	NSLog(@"HB %d %d", holdingBuffer[0], holdingBuffer[1]);
 	if ( chr == holdingBuffer[1] )	{
 		holdingBufferCount[1]++;
-		
-		//To deal with the case where we've received nothing for a while, spit out the buffer
-		if (( holdingBuffer[1] == ' ' ) && ( holdingBufferCount[1] >= 40 )) prodBuffer = true;
+		// To deal with the case where we've received nothing for a while, 
+		// spit out the buffer
+		if (( holdingBuffer[1] == ' ' ) && ( holdingBufferCount[1] >= 40 )) showBuffer = true;
 	} else {
-		prodBuffer = true;
+		showBuffer = true;
 	}
 	
-	if ( prodBuffer ) {
+	if ( showBuffer ) {
 		// Combine the buffer entries if they're the same
 		if ( holdingBuffer[1] == holdingBuffer[0] ) {
 			holdingBufferCount[1] += holdingBufferCount[0];
@@ -247,14 +244,15 @@ void AudioInputCallback(void *inUserData,
 		// Archive the current value if we have more than 4 samples
 		if (( holdingBufferCount[1] >= 4 ) || ( rawOutput )) {
 			if (( holdingBuffer[0] != 0 ) && ( holdingBuffer[0] != ' ' ))	{
-				//NSLog(@"%c", holdingBuffer[0]);
 				char tmp[20];
 				if ( rawOutput )	{
 					sprintf(tmp, "%c(%d) ", holdingBuffer[0], holdingBufferCount[0]);
 				} else {
 					sprintf(tmp, "%c", holdingBuffer[0]);
 				}
-				strcat(outputBuffer,tmp); 
+				
+				strcat(recordState->detectBuffer,tmp);
+				NSLog(@"Detected %c", tmp);
 			}
 			holdingBuffer[0]	= holdingBuffer[1];
 			holdingBufferCount[0] = holdingBufferCount[1];
@@ -269,22 +267,28 @@ void AudioInputCallback(void *inUserData,
 
 @implementation DTMFDecoder
 
-@synthesize currentFreqs, detectBuffer, running, lastcount, ledbin;
+@synthesize currentFreqs, running, lastcount, ledbin;
 
 -(id) init
 {
 	[super init];
 	defaults = [NSUserDefaults standardUserDefaults];
+	[self loadSettings];
 	[self setCurrentFreqs:nil];
 	[self startRecording];
+	uip = [UIPasteboard generalPasteboard];
 	return self;
 }
 
 -(void) startRecording
 {
+	for(int i = 0 ; i < 2 ; i++) {		
+		holdingBufferCount[i] = 0;
+		holdingBuffer[i] = ' ';
+	}
 	AudioQueueBufferRef qref[10];
 	currentFreqs = nil;
-	detectBuffer = (char *)calloc(1,DETECTBUFFERLEN);
+	recordState.detectBuffer = (char *)calloc(1,DETECTBUFFERLEN);
 	
 	// these statements define the audio stream basic description
 	// for the file to record into.
@@ -334,7 +338,7 @@ void AudioInputCallback(void *inUserData,
 	
 	for (int i = 0; i < NUM_BUFFERS; ++i) {
 		//Allocate buffer. Size is in bytes.
-		AudioQueueAllocateBuffer(recordState.queue, 4096, &qref[i]);
+		AudioQueueAllocateBuffer(recordState.queue, BUFFER_SIZE, &qref[i]);
 		AudioQueueEnqueueBuffer(recordState.queue, qref[i] , 0, NULL);			
 	}
 
@@ -353,13 +357,11 @@ void AudioInputCallback(void *inUserData,
 
 
 
-
-
 - (void) resetBuffer
 {
 	if ([self running]) {
 		[self setRunning: NO];
-		memset(detectBuffer, '\0', sizeof(detectBuffer));
+		memset(recordState.detectBuffer, '\0', DETECTBUFFERLEN);
 		last = ' ';
 		[self setRunning: YES];
 	}
@@ -367,7 +369,6 @@ void AudioInputCallback(void *inUserData,
 
 
 //////////////////////////
-
 
 
 - (void)stopRecording
@@ -427,10 +428,34 @@ void AudioInputCallback(void *inUserData,
 {
 	if (powerMethod > 2 || powerMethod < 0) powerMethod = 1;
 	powerMeasurementMethod = powerMethod;
-	NSLog(@"Noise Tolerence Factor: %d", powerMethod);
+	NSLog(@"powerMethod: %d", powerMethod);
 	[defaults setInteger:powerMethod forKey:@"powerMethod"];
 }
 
 
+- (float) getNoiseLevel
+{
+	float res = [defaults floatForKey:@"noiseLevel"];
+	NSLog(@"getNoiseLevel %f",res);
+	return res;
+}
 
+
+- (NSInteger) getPowerMethod
+{
+	NSInteger res = [defaults integerForKey:@"powerMethod"];
+	NSLog(@"getpowerMethod %d",res);
+	return res; 
+}
+
+- (char *) getDetectBuffer
+{
+	return recordState.detectBuffer;
+}
+
+- (void) copyBuffer
+{
+	NSString *str = [NSString stringWithCString:recordState.detectBuffer encoding:NSASCIIStringEncoding];
+	[uip setString:str];
+}
 @end

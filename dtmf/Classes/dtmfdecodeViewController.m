@@ -48,7 +48,7 @@
 	[self.view setNeedsLayout];
 	DTMFDecoder *dec = [[DTMFDecoder alloc] init];
 	[self setDecoder:dec];
-	[(LCDView *)self.view setLCDString:[self.decoder detectBuffer]];
+	[(LCDView *)self.view setLCDString:[self.decoder getDetectBuffer]];
 	UIViewController *settingsVC = [[UIViewController alloc] initWithNibName:@"settings" bundle:nil];
 	[settingsVC loadView];
 	[self setSettingsViewController:settingsVC];
@@ -63,7 +63,8 @@
 
 - (void)tick:(NSTimer *)timer
 {
-	[(LCDView *)self.view setLCDString:[self.decoder detectBuffer]];
+	[(LCDView *)self.view setLCDString:[self.decoder getDetectBuffer]];
+	//NSLog(@" buffer:%s", [self.decoder getDetectBuffer]);
 	[(LCDView *)self.view setLEDs:[self.decoder ledbin]];
 }
 
@@ -81,7 +82,9 @@
 
 - (void)flipToSettings {
 	settings *settingsView = (settings *)settingsViewController.view;
-	[settingsView  setBackgroundColor:[UIColor viewFlipsideBackgroundColor]];
+	[settingsView setBackgroundColor:[UIColor viewFlipsideBackgroundColor]];
+	[settingsView setPowerMethod:[self.decoder getPowerMethod]];
+	[settingsView setNoiseLevel:[self.decoder getNoiseLevel]];
 	[UIView beginAnimations:nil context:NULL];
 	[UIView setAnimationDuration:1];
 	[UIView setAnimationTransition:UIViewAnimationTransitionFlipFromLeft forView:self.view cache:YES];
@@ -119,6 +122,13 @@
 }
 
 
+- (IBAction) copyButtonPressed
+{
+	NSLog(@"copy pressed");
+	[self.decoder copyBuffer];
+}
+
+
 - (IBAction) flipBack
 {
 	NSLog(@"flipBack");
@@ -140,4 +150,8 @@
 	[self.decoder setNoiseLevel:noiseLevel];
 }
 
+- (void) setPowerMethod:(NSInteger)method
+{
+	[self.decoder setPowerMethod:method];
+}
 @end

@@ -33,6 +33,7 @@
 	NSData *data;
 	DTMFDecoder *decoder;
 	UIViewController *settingsViewController;
+	UIPasteboard *uip;
 }
 
 @property (nonatomic, retain)	UIViewController *settingsViewController;
@@ -45,9 +46,10 @@
 - (IBAction) settingsButtonPressed;
 - (IBAction) clearButtonPressed;
 - (IBAction) flipBack;
+- (IBAction) copyButtonPressed;
 - (void) flipToSettings;
 - (void) tick: (NSTimer *)timer;
 - (void) setNoiseLevel:(float) noiseLevel;
-
+- (void) setPowerMethod:(NSInteger) method;
 
 @end

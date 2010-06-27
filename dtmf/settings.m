@@ -32,6 +32,7 @@
 	powerMethods = [[NSArray arrayWithObjects:@"Peak Value RMS", @"Sqrt Sum Squares", @"Sum Abs", nil] retain];
 }
 
+
 - (void)drawRect:(CGRect)rect {
 	[self setSwitchState:1];
 }
@@ -79,18 +80,32 @@ numberOfRowsInComponent:(NSInteger)component
 {
 	NSLog(@"flipBack");
 	[(dtmfdecodeViewController *) masterController setNoiseLevel:[backgroundLevel value]];
+	[(dtmfdecodeViewController *) masterController setPowerMethod:[powerPicker selectedRowInComponent:0]];
 	[(dtmfdecodeViewController *) masterController flipBack];
 }
 
+- (IBAction) resetDefaults
+{
+	NSLog(@"reset");
+	[backgroundLevel setValue:0.5 animated:false];
+	[powerPicker selectRow:1 inComponent:0 animated:false];
+}
 
 - (void) setPowerMethod:(NSInteger)method
 {
+	NSLog(@"setPowerMethod %d",method);
+	[powerPicker selectRow:method inComponent:0 animated:false];
 }
 
 
-- (void) setNoiseLevel:(NSInteger)level
+- (void) setNoiseLevel:(float)level
 {
+	NSLog(@"setNoiseLevel %f",level);
+	[backgroundLevel setValue:level animated:false];
 }
+
+
+
 
 
 @end

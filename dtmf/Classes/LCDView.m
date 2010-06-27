@@ -38,6 +38,7 @@
 	if (strlen(content) > LCD_COLS) {
 		content = content + (strlen(content)-LCD_COLS);
 	}
+	//NSLog(@"LCDString %d len",strlen(content));
 	UIImageView *disp[LCD_COLS] = {a,b,c,d,e,f,g,h,i,j,k,l,m,n,o};
 	for (int in = 0; in < LCD_COLS; in++) {
 		[disp[in] setImage:[self charToImage:*content]];
