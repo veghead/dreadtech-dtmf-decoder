@@ -55,6 +55,7 @@ typedef struct
 	short						filteredBuffer[BUFFER_SIZE];
 	id							*decoderObject;
 	char						*detectBuffer;
+	short						ledbin;
 } recordState_t;
 
 
@@ -65,7 +66,6 @@ typedef struct
 	int			lastcount;
 	int			gaplen;
 	char		last;
-	int			ledbin;
 	bool		running;
 	recordState_t recordState;
 	UIPasteboard *uip;
@@ -88,4 +88,5 @@ typedef struct
 - (NSInteger) getPowerMethod;
 - (char *) getDetectBuffer;
 - (void) copyBuffer;
+- (recordState_t *) getRecordState;
 @end

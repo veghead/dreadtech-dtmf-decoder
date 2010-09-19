@@ -46,7 +46,9 @@
 	}
 }
 
-
+/**
+  * bits set in 'bin' correspond to the 8 LEDs
+  */
 - (void)setLEDs:(int)bin {
 	UIImageView *disp[8] = {la,lb,lc,ld,le,lf,lg,lh};
 	for (int in = 0; in < 8; in++) {

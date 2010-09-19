@@ -80,7 +80,7 @@ double bandPassFilter(register double val, int filterIndex)
 
 
 
-char lookupDTMFCode(void)
+char lookupDTMFCode(recordState_t *state)
 {
 	// Find the highest powered frequency index
 	int max1Index = 0;
@@ -108,6 +108,10 @@ char lookupDTMFCode(void)
 		
 		if (powers[i] > ( powers[max2Index] / noiseTolerenceFactor )) {valid = NO;break;}
 	}
+	
+	state->ledbin = ((2^max2Index) + (2^max1Index));
+	
+	
 	
 	if ( valid ) {
 		// NSLog(@"Highest Frequencies found: %d %d", max1Index, max2Index);
@@ -224,7 +228,7 @@ void AudioInputCallback(void *inUserData,
 	//NSLog(@"RMS Powers: %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf", powers[0], powers[1], powers[2], powers[3], powers[4], powers[5], powers[6], powers[7]);
 	
 	// Figure out the dtmf code <space> is nothing recognized
-	char chr = lookupDTMFCode();	
+	char chr = lookupDTMFCode(recordState);	
 	
 	// Add it to the buffer
 	bool showBuffer = false;
@@ -466,5 +470,10 @@ void AudioInputCallback(void *inUserData,
 {
 	NSString *str = [NSString stringWithCString:recordState.detectBuffer encoding:NSASCIIStringEncoding];
 	[uip setString:str];
+}
+
+- (recordState_t*) getRecordState 
+{
+	return &recordState;
 }
 @end
