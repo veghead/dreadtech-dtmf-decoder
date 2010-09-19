@@ -28,10 +28,10 @@
 static double	powers[NUM_FREQS];		// Location to store the powers for all the frequencies
 static double	filterBuf0[NUM_FREQS];	// Buffer for the IIR filter slot 0
 static double	filterBuf1[NUM_FREQS];	// Buffer for the IIR filter slot 1
-static char	holdingBuffer[2];
+static char		holdingBuffer[2];
 static int		holdingBufferCount[2];
 static int		powerMeasurementMethod;	// 0 = Peak Value -> RMS, 1 = Sqrt of Sum of Squares, 2 = Sum of Abs Values
-static BOOL	rawOutput;
+static BOOL		rawOutput;
 static double	noiseTolerenceFactor;
 
 
@@ -160,7 +160,9 @@ void AudioInputCallback(void *inUserData,
 
 	// Normalize - AKA Automatic Gain
 	min=p[0]; max=p[0];
+	long zerocount = 0;
 	for (i=0L; i<numberOfSamples; i++) {
+		if (p[i] == 0) zerocount++;
 		if ( p[i] < min )	min = p[i];
 		if ( p[i] > max )	max = p[i];
 	}
@@ -171,6 +173,8 @@ void AudioInputCallback(void *inUserData,
 	for (i=0L; i<numberOfSamples; i++)	{
 		p[i] = (short)(((double)p[i] / (double)max) * (double)32767);
 	}
+	
+	//NSLog(@"%d %d %ld %lf",min, max, zerocount, inStartTime->mSampleTime);
 	
 	// Reset all previous power calculations
 	int t;
@@ -216,14 +220,15 @@ void AudioInputCallback(void *inUserData,
 		}
 	}
 	
-	// NSLog(@"RMS Powers: %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf", powers[0], powers[1], powers[2], powers[3], powers[4], powers[5], powers[6], powers[7]);
+	//NSLog(@"HB %d %d", holdingBuffer[0], holdingBuffer[1]);	
+	//NSLog(@"RMS Powers: %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf, %0.3lf", powers[0], powers[1], powers[2], powers[3], powers[4], powers[5], powers[6], powers[7]);
 	
 	// Figure out the dtmf code <space> is nothing recognized
 	char chr = lookupDTMFCode();	
 	
 	// Add it to the buffer
 	bool showBuffer = false;
-	NSLog(@"HB %d %d", holdingBuffer[0], holdingBuffer[1]);
+
 	if ( chr == holdingBuffer[1] )	{
 		holdingBufferCount[1]++;
 		// To deal with the case where we've received nothing for a while, 
@@ -241,8 +246,8 @@ void AudioInputCallback(void *inUserData,
 			holdingBufferCount[0] = 0;
 		}
 		
-		// Archive the current value if we have more than 4 samples
-		if (( holdingBufferCount[1] >= 4 ) || ( rawOutput )) {
+		// Archive the current value if we have more than 2 samples
+		if (( holdingBufferCount[1] > 1 ) || ( rawOutput )) {
 			if (( holdingBuffer[0] != 0 ) && ( holdingBuffer[0] != ' ' ))	{
 				char tmp[20];
 				if ( rawOutput )	{
@@ -286,7 +291,7 @@ void AudioInputCallback(void *inUserData,
 		holdingBufferCount[i] = 0;
 		holdingBuffer[i] = ' ';
 	}
-	AudioQueueBufferRef qref[10];
+	AudioQueueBufferRef qref[NUM_BUFFERS];
 	currentFreqs = nil;
 	recordState.detectBuffer = (char *)calloc(1,DETECTBUFFERLEN);
 	
@@ -448,10 +453,14 @@ void AudioInputCallback(void *inUserData,
 	return res; 
 }
 
+
+
 - (char *) getDetectBuffer
 {
 	return recordState.detectBuffer;
 }
+
+
 
 - (void) copyBuffer
 {

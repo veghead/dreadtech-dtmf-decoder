@@ -25,15 +25,15 @@
 #define SAMPLING_RATE		8000.0
 #define DEBOUNCELEN			2
 #define GAPLEN				2
-#define NUM_BUFFERS			3
+#define NUM_BUFFERS			40
 #define DETECTBUFFERLEN		8192
 
 #define MIN_TONE_LENGTH		0.045	// 45ms
-#define FRAMES_PER_TONE		4
+#define FRAMES_PER_TONE		2
 #define BYTES_PER_CHANNEL	2
-#define BUFFER_SIZE			(((int)(MIN_TONE_LENGTH / (1.0/SAMPLING_RATE)) * BYTES_PER_CHANNEL) / FRAMES_PER_TONE )
+#define BUFFER_SIZE			((int)(MIN_TONE_LENGTH * SAMPLING_RATE * BYTES_PER_CHANNEL) / FRAMES_PER_TONE )
 
-#define NUM_FREQS				8		// The number of dtmf frequencies (band pass filters)
+#define NUM_FREQS			8		// The number of dtmf frequencies (band pass filters)
 
 
 
@@ -48,9 +48,9 @@ typedef struct
 {
 	AudioStreamBasicDescription dataFormat;
 	AudioQueueRef				queue;
-	AudioQueueBufferRef		buffers[NUM_BUFFERS];
+	AudioQueueBufferRef			buffers[NUM_BUFFERS];
 	BOOL						recording;
-	AudioFileID				audioFile;
+	AudioFileID					audioFile;
 	SInt64						currentPacket;
 	short						filteredBuffer[BUFFER_SIZE];
 	id							*decoderObject;

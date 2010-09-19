@@ -62,8 +62,9 @@
 	if (isdigit(chr) || (chr == 'A') || (chr == 'B') || (chr == 'C') || (chr == 'D')
 			|| (chr == '*') || (chr == '#')) {
 		char name[10];
-		snprintf(name,10,"%c.png",chr);
-		return [UIImage imageNamed:[[NSString alloc] initWithCString:name]];	
+		snprintf(name,10,"%c.png",chr);;
+		UIImage *img = [UIImage imageNamed:[NSString stringWithCString:name encoding:NSASCIIStringEncoding]];
+		return img;
 	}
 	return nil;
 }

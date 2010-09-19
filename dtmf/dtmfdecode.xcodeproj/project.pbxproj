@@ -341,7 +341,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
-				SDKROOT = iphoneos2.0;
+				SDKROOT = iphoneos3.2;
 			};
 			name = Debug;
 		};
@@ -350,13 +350,13 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CODE_SIGN_ENTITLEMENTS = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Martin Wellard";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Martin Wellard (AGM4P7RNC6)";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PREBINDING = NO;
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "183FC1C7-0F83-4071-8C3F-6C7033E4D4F8";
-				SDKROOT = iphoneos2.0;
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "14410A04-79B3-4E6C-B577-C5AF4B5C1D07";
+				SDKROOT = iphoneos3.2;
 			};
 			name = Release;
 		};
