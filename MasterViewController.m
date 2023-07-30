@@ -45,7 +45,7 @@
     [[textView layer] setBorderColor:[[UIColor blackColor] CGColor]];
     [[textView layer] setBorderWidth:2.5];
     [[textView layer] setCornerRadius:5];
-    
+    [textView setText:@""];
     [NSTimer scheduledTimerWithTimeInterval:0.25 target:self selector:@selector(tick:) userInfo:self repeats:YES];
 }
 
@@ -53,6 +53,10 @@
 
 - (void)tick:(NSTimer *)timer
 {
+    [self.lcdView setLCDString:[self.decoder getDetectBuffer]];
+    NSString *s =[NSString stringWithUTF8String:[self.decoder getDetectBuffer]];
+    [textView setText:s];
+    //NSLog(@" buffer:%s", [self.decoder getDetectBuffer]);
     [self.lcdView setLEDs:[self.decoder ledbin]];
     if (self.decoder.bufferChanged) {
         [self.lcdView setLCDString:self.decoder.getDetectBuffer];
